@@ -1,0 +1,15 @@
+services:
+  api-gateway:
+    build: .
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - dev-network
+
+networks:
+  dev-network:
+    external: true
+    name: dev-network

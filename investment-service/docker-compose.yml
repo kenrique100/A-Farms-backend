@@ -1,0 +1,37 @@
+services:
+  investment-service:
+    build: .
+    container_name: investment-service
+    ports:
+      - "8083:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://investment-service-db:5432/investment_db
+      SPRING_DATASOURCE_USERNAME: afarms
+      SPRING_DATASOURCE_PASSWORD: afarms
+    depends_on:
+      - investment-service-db
+    networks:
+      - dev-network
+
+  investment-service-db:
+    image: postgres:16-alpine
+    container_name: investment-service-db
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_DB: investment_db
+      POSTGRES_USER: afarms
+      POSTGRES_PASSWORD: afarms
+    volumes:
+      - investment-service-db-data:/var/lib/postgresql/data
+    networks:
+      - dev-network
+
+networks:
+  dev-network:
+    external: true
+    name: dev-network
+
+volumes:
+  investment-service-db-data:
