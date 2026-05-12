@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if ! docker network inspect dev-network >/dev/null 2>&1; then
   echo "Creating shared external network: dev-network"
-  docker network create dev-network >/dev/null
+  docker network create dev-network
 fi
 
 for service_dir in \
