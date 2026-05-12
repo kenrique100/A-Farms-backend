@@ -1,0 +1,43 @@
+services:
+  user-service:
+    build: .
+    container_name: user-service
+    ports:
+      - "8085:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://user-service-db:5432/user_db
+      SPRING_DATASOURCE_USERNAME: ${AFARMS_DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${AFARMS_DB_PASSWORD}
+    depends_on:
+      user-service-db:
+        condition: service_healthy
+    networks:
+      - dev-network
+
+  user-service-db:
+    image: postgres:16-alpine
+    container_name: user-service-db
+    ports:
+      - "5437:5432"
+    environment:
+      POSTGRES_DB: user_db
+      POSTGRES_USER: ${AFARMS_DB_USER}
+      POSTGRES_PASSWORD: ${AFARMS_DB_PASSWORD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${AFARMS_DB_USER} -d user_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - user-service-db-data:/var/lib/postgresql/data
+    networks:
+      - dev-network
+
+networks:
+  dev-network:
+    external: true
+    name: dev-network
+
+volumes:
+  user-service-db-data:

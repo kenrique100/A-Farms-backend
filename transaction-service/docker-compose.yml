@@ -1,0 +1,43 @@
+services:
+  transaction-service:
+    build: .
+    container_name: transaction-service
+    ports:
+      - "8084:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://transaction-service-db:5432/transaction_db
+      SPRING_DATASOURCE_USERNAME: ${AFARMS_DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${AFARMS_DB_PASSWORD}
+    depends_on:
+      transaction-service-db:
+        condition: service_healthy
+    networks:
+      - dev-network
+
+  transaction-service-db:
+    image: postgres:16-alpine
+    container_name: transaction-service-db
+    ports:
+      - "5436:5432"
+    environment:
+      POSTGRES_DB: transaction_db
+      POSTGRES_USER: ${AFARMS_DB_USER}
+      POSTGRES_PASSWORD: ${AFARMS_DB_PASSWORD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${AFARMS_DB_USER} -d transaction_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - transaction-service-db-data:/var/lib/postgresql/data
+    networks:
+      - dev-network
+
+networks:
+  dev-network:
+    external: true
+    name: dev-network
+
+volumes:
+  transaction-service-db-data:
