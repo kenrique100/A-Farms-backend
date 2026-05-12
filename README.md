@@ -12,6 +12,7 @@ FarmStack Backend: Microservice-based farm management API with multi-tenancy, Cl
 
 ## Quick start
 ```bash
+cp .env.example .env
 ./start-all-services.sh
 ```
 

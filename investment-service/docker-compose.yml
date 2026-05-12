@@ -7,10 +7,11 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://investment-service-db:5432/investment_db
-      SPRING_DATASOURCE_USERNAME: afarms
-      SPRING_DATASOURCE_PASSWORD: afarms
+      SPRING_DATASOURCE_USERNAME: ${AFARMS_DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${AFARMS_DB_PASSWORD}
     depends_on:
-      - investment-service-db
+      investment-service-db:
+        condition: service_healthy
     networks:
       - dev-network
 
@@ -21,8 +22,13 @@ services:
       - "5435:5432"
     environment:
       POSTGRES_DB: investment_db
-      POSTGRES_USER: afarms
-      POSTGRES_PASSWORD: afarms
+      POSTGRES_USER: ${AFARMS_DB_USER}
+      POSTGRES_PASSWORD: ${AFARMS_DB_PASSWORD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${AFARMS_DB_USER} -d investment_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
       - investment-service-db-data:/var/lib/postgresql/data
     networks:

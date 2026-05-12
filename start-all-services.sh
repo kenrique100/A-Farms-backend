@@ -3,6 +3,18 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+if [[ -f "${ROOT_DIR}/.env" ]]; then
+  set -a
+  source "${ROOT_DIR}/.env"
+  set +a
+fi
+
+if [[ -z "${AFARMS_DB_USER:-}" || -z "${AFARMS_DB_PASSWORD:-}" ]]; then
+  echo "Missing AFARMS_DB_USER/AFARMS_DB_PASSWORD."
+  echo "Create ${ROOT_DIR}/.env from ${ROOT_DIR}/.env.example and set both values."
+  exit 1
+fi
+
 if ! docker network inspect dev-network >/dev/null 2>&1; then
   echo "Creating shared external network: dev-network"
   docker network create dev-network
