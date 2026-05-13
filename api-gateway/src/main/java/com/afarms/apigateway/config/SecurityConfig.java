@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -123,7 +124,7 @@ public class SecurityConfig {
                     roles.stream()
                             .map(String::trim)
                             .filter(role -> !role.isBlank())
-                            .map(String::toUpperCase)
+                            .map(role -> role.toUpperCase(Locale.ROOT))
                             .map(role -> (GrantedAuthority) () -> "ROLE_" + role)
                             .collect(Collectors.toList());
             return Flux.fromIterable(authorities);

@@ -16,7 +16,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -55,12 +54,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private String resolveRole(String token) {
         List<String> roles = jwtUtil.extractRoles(token);
         if (!roles.isEmpty()) {
-            return roles.getFirst().trim().toUpperCase(Locale.ROOT);
+            return RoleConstants.resolvePrimaryRole(roles);
         }
 
         String role = jwtUtil.extractRole(token);
         if (role != null && !role.isBlank()) {
-            return role.trim().toUpperCase(Locale.ROOT);
+            return RoleConstants.normalizeRole(role);
         }
 
         Map<String, Object> claims = jwtUtil.extractClaims(token);
@@ -68,14 +67,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (realmAccess instanceof Map<?, ?> realmAccessMap) {
             Object realmRoles = realmAccessMap.get("roles");
             if (realmRoles instanceof Collection<?> collection) {
-                return collection.stream()
+                List<String> roleValues = collection.stream()
                         .filter(Objects::nonNull)
                         .map(String::valueOf)
-                        .map(String::trim)
-                        .filter(value -> !value.isBlank())
-                        .map(value -> value.toUpperCase(Locale.ROOT))
-                        .findFirst()
-                        .orElse(RoleConstants.DEFAULT_ROLE);
+                        .toList();
+                return RoleConstants.resolvePrimaryRole(roleValues);
             }
         }
         return RoleConstants.DEFAULT_ROLE;

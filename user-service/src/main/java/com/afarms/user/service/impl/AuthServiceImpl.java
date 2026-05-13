@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -85,7 +84,8 @@ public class AuthServiceImpl implements AuthService {
         if (!farmExists) {
             throw new BusinessException("Farm not found or invalid");
         }
-        String role = request.getRole() == null ? RoleConstants.SUB_USER : request.getRole().trim().toUpperCase(Locale.ROOT);
+        String normalizedRequestRole = RoleConstants.normalizeRole(request.getRole());
+        String role = request.getRole() == null ? RoleConstants.SUB_USER : normalizedRequestRole;
         if (!RoleConstants.ALLOWED_ROLES.contains(role)) {
             throw new BusinessException("Invalid role");
         }
