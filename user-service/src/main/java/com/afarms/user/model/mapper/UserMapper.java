@@ -1,7 +1,5 @@
 package com.afarms.user.model.mapper;
 
-import com.afarms.user.model.dto.UserRequestDTO;
-import com.afarms.user.model.dto.UserResponseDTO;
 import com.afarms.user.model.entity.User;
 
 public final class UserMapper {

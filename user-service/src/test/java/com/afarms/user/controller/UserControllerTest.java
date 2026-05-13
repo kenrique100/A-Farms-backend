@@ -3,7 +3,6 @@ package com.afarms.user.controller;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 
-import com.afarms.user.service.UserService;
 import org.junit.jupiter.api.Test;
 
 class UserControllerTest {

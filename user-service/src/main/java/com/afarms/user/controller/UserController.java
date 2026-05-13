@@ -1,8 +1,5 @@
 package com.afarms.user.controller;
 
-import com.afarms.user.model.dto.UserRequestDTO;
-import com.afarms.user.model.dto.UserResponseDTO;
-import com.afarms.user.service.UserService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;

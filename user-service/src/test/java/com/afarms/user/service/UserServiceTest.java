@@ -3,7 +3,6 @@ package com.afarms.user.service;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.afarms.user.repository.UserRepository;
-import com.afarms.user.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
