@@ -12,6 +12,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -25,7 +26,9 @@ public class JwtUtil {
     }
 
     public String generateToken(User user) {
-        String normalizedRole = user.getRole() == null ? "USER" : user.getRole().trim().toUpperCase();
+        String normalizedRole = user.getRole() == null
+                ? RoleConstants.DEFAULT_ROLE
+                : user.getRole().trim().toUpperCase(Locale.ROOT);
         return Jwts.builder()
                 .subject(user.getEmail())
                 .claim("userId", user.getId().toString())

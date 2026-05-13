@@ -1,6 +1,7 @@
 package com.afarms.user.config;
 
 import com.afarms.user.security.JwtUtil;
+import com.afarms.user.security.RoleConstants;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,7 +55,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private String resolveRole(String token) {
         List<String> roles = jwtUtil.extractRoles(token);
         if (!roles.isEmpty()) {
-            return roles.getFirst().toUpperCase(Locale.ROOT);
+            return roles.getFirst().trim().toUpperCase(Locale.ROOT);
         }
 
         String role = jwtUtil.extractRole(token);
@@ -74,9 +75,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         .filter(value -> !value.isBlank())
                         .map(value -> value.toUpperCase(Locale.ROOT))
                         .findFirst()
-                        .orElse("USER");
+                        .orElse(RoleConstants.DEFAULT_ROLE);
             }
         }
-        return "USER";
+        return RoleConstants.DEFAULT_ROLE;
     }
 }

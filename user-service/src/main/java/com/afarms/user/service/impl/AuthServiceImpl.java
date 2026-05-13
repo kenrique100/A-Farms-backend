@@ -7,6 +7,7 @@ import com.afarms.user.model.dto.*;
 import com.afarms.user.model.entity.User;
 import com.afarms.user.repository.UserRepository;
 import com.afarms.user.security.JwtUtil;
+import com.afarms.user.security.RoleConstants;
 import com.afarms.user.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -25,8 +25,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class AuthServiceImpl implements AuthService {
-
-    private static final Set<String> ALLOWED_ROLES = Set.of("USER", "ADMIN", "MASTER", "SUB_USER");
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -87,8 +85,8 @@ public class AuthServiceImpl implements AuthService {
         if (!farmExists) {
             throw new BusinessException("Farm not found or invalid");
         }
-        String role = request.getRole() == null ? "SUB_USER" : request.getRole().trim().toUpperCase(Locale.ROOT);
-        if (!ALLOWED_ROLES.contains(role)) {
+        String role = request.getRole() == null ? RoleConstants.SUB_USER : request.getRole().trim().toUpperCase(Locale.ROOT);
+        if (!RoleConstants.ALLOWED_ROLES.contains(role)) {
             throw new BusinessException("Invalid role");
         }
         User user = User.builder()
