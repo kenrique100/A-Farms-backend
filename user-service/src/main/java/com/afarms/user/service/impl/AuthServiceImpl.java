@@ -9,18 +9,24 @@ import com.afarms.user.repository.UserRepository;
 import com.afarms.user.security.JwtUtil;
 import com.afarms.user.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthServiceImpl implements AuthService {
+
+    private static final Set<String> ALLOWED_ROLES = Set.of("USER", "ADMIN", "MASTER", "SUB_USER");
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -34,14 +40,16 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmailOrUsername(request.getEmailOrUsername(), request.getEmailOrUsername())
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid credentials"));
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            log.warn("Failed login attempt for {}", request.getEmailOrUsername());
             throw new InvalidCredentialsException("Invalid credentials");
         }
+        log.info("Successful login for {} with role {}", user.getEmail(), user.getRole());
         return jwtUtil.generateToken(user);
     }
 
     @Override
     public UserDetails getUserDetails(String email) {
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmailOrUsername(email, email)
                 .orElseThrow(() -> new BusinessException("User not found"));
         return new UserDetails(user.getEmail(), user.getRole(), user.getFarmId());
     }
@@ -64,6 +72,7 @@ public class AuthServiceImpl implements AuthService {
                 .farmId(farmId)
                 .build();
         User saved = userRepository.save(user);
+        log.info("Master user registered for farm {} with email {}", saved.getFarmId(), saved.getEmail());
         String token = jwtUtil.generateToken(saved);
         return new AuthResponse(token, saved.getEmail(), saved.getRole(), saved.getFarmId());
     }
@@ -78,13 +87,18 @@ public class AuthServiceImpl implements AuthService {
         if (!farmExists) {
             throw new BusinessException("Farm not found or invalid");
         }
+        String role = request.getRole() == null ? "SUB_USER" : request.getRole().trim().toUpperCase(Locale.ROOT);
+        if (!ALLOWED_ROLES.contains(role)) {
+            throw new BusinessException("Invalid role");
+        }
         User user = User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole())
+                .role(role)
                 .farmId(request.getFarmId())
                 .build();
         userRepository.save(user);
+        log.info("Sub-user {} registered with role {} for farm {}", user.getEmail(), user.getRole(), user.getFarmId());
         return "Sub-user registered: " + user.getEmail();
     }
 

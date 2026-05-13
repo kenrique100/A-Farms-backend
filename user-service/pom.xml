@@ -83,13 +83,13 @@
         <version>3.4.2</version>
         <configuration>
           <archive>
-            <manifest>
-              <addClasspath>true</addClasspath>
-              <mainClass>com.farmstack.user.UserServiceApplication</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
-      </plugin>
+              <manifest>
+                <addClasspath>true</addClasspath>
+                <mainClass>com.afarms.user.UserServiceApplication</mainClass>
+              </manifest>
+            </archive>
+          </configuration>
+        </plugin>
 
       <plugin>
         <groupId>org.springframework.boot</groupId>
@@ -101,7 +101,7 @@
               <artifactId>lombok</artifactId>
             </exclude>
           </excludes>
-          <mainClass>com.farmstack.user.UserServiceApplication</mainClass>
+          <mainClass>com.afarms.user.UserServiceApplication</mainClass>
         </configuration>
         <executions>
           <execution>

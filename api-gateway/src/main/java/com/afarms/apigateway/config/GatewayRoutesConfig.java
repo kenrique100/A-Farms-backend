@@ -1,5 +1,6 @@
 package com.afarms.apigateway.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
@@ -8,19 +9,34 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class GatewayRoutesConfig {
 
+    @Value("${services.income.url:http://income-service:8080}")
+    private String incomeServiceUrl;
+
+    @Value("${services.expense.url:http://expense-service:8080}")
+    private String expenseServiceUrl;
+
+    @Value("${services.investment.url:http://investment-service:8080}")
+    private String investmentServiceUrl;
+
+    @Value("${services.transaction.url:http://transaction-service:8080}")
+    private String transactionServiceUrl;
+
+    @Value("${services.user.url:http://user-service:8080}")
+    private String userServiceUrl;
+
     @Bean
     public RouteLocator routeLocator(RouteLocatorBuilder builder) {
         return builder.routes()
                 .route("income-service", r -> r.path("/api/v1/incomes/**")
-                        .uri("http://income-service:8082"))
+                        .uri(incomeServiceUrl))
                 .route("expense-service", r -> r.path("/api/v1/expenses/**")
-                        .uri("http://expense-service:8083"))
+                        .uri(expenseServiceUrl))
                 .route("investment-service", r -> r.path("/api/v1/investments/**")
-                        .uri("http://investment-service:8084"))
+                        .uri(investmentServiceUrl))
                 .route("transaction-service", r -> r.path("/api/v1/transactions/**")
-                        .uri("http://transaction-service:8085"))
+                        .uri(transactionServiceUrl))
                 .route("user-service", r -> r.path("/api/v1/users/**")
-                        .uri("http://user-service:8086"))
+                        .uri(userServiceUrl))
                 .build();
     }
 }
