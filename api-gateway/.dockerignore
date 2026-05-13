@@ -1,0 +1,48 @@
+# Build artifacts
+target/
+classes/
+test-classes/
+
+# IDE files
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# Logs
+*.log
+logs/
+
+# Docker files
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.*.yml
+
+# Environment files
+../.env
+.env.example
+!.env.example
+
+# System files
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+*.swp
+
+# Maven wrapper (not needed)
+.mvn/
+mvnw
+mvnw.cmd
+
+# Test output
+test-output/
+surefire-reports/

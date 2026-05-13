@@ -1,2 +1,2 @@
-.env
+api-gateway/.env
 **/target/

@@ -12,15 +12,15 @@ public class GatewayRoutesConfig {
     public RouteLocator routeLocator(RouteLocatorBuilder builder) {
         return builder.routes()
                 .route("income-service", r -> r.path("/api/v1/incomes/**")
-                        .uri("http://income-service:8080"))
+                        .uri("http://income-service:8082"))
                 .route("expense-service", r -> r.path("/api/v1/expenses/**")
-                        .uri("http://expense-service:8080"))
+                        .uri("http://expense-service:8083"))
                 .route("investment-service", r -> r.path("/api/v1/investments/**")
-                        .uri("http://investment-service:8080"))
+                        .uri("http://investment-service:8084"))
                 .route("transaction-service", r -> r.path("/api/v1/transactions/**")
-                        .uri("http://transaction-service:8080"))
+                        .uri("http://transaction-service:8085"))
                 .route("user-service", r -> r.path("/api/v1/users/**")
-                        .uri("http://user-service:8080"))
+                        .uri("http://user-service:8086"))
                 .build();
     }
 }
