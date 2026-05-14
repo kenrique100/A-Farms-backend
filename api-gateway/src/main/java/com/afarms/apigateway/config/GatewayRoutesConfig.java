@@ -27,6 +27,10 @@ public class GatewayRoutesConfig {
     @Bean
     public RouteLocator routeLocator(RouteLocatorBuilder builder) {
         return builder.routes()
+                .route("user-service-docs", r -> r
+                        .path("/user-service/v3/api-docs/**")
+                        .filters(f -> f.rewritePath("/user-service/(?<segment>.*)", "/${segment}"))
+                        .uri(userServiceUrl))
                 .route("income-service", r -> r.path("/api/v1/incomes/**")
                         .uri(incomeServiceUrl))
                 .route("expense-service", r -> r.path("/api/v1/expenses/**")
