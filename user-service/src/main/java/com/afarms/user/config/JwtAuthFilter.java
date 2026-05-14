@@ -33,6 +33,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
+
+        String requestURI = request.getRequestURI();
+
+        // Skip JWT validation for Swagger UI and API docs paths
+        if (shouldSkipJwtValidation(requestURI)) {
+            log.debug("Skipping JWT validation for Swagger path: {}", requestURI);
+            chain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
@@ -49,6 +59,28 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
         }
         chain.doFilter(request, response);
+    }
+
+    private boolean shouldSkipJwtValidation(String requestURI) {
+        String[] skipPaths = {
+                "/swagger-ui",
+                "/swagger-ui.html",
+                "/v3/api-docs",
+                "/swagger-resources",
+                "/webjars",
+                "/actuator/health",
+                "/actuator/info",
+                "/api/v1/users/login",
+                "/api/v1/users/register/master",
+                "/api/v1/users/register/sub-user"
+        };
+
+        for (String path : skipPaths) {
+            if (requestURI.startsWith(path)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String resolveRole(String token) {

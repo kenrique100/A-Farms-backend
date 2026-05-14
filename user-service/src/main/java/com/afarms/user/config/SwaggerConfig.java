@@ -7,6 +7,7 @@ import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,6 +15,9 @@ import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
+
+    @Value("${server.port:8085}")
+    private int serverPort;
 
     @Bean
     public OpenAPI userServiceOpenAPI() {
@@ -25,7 +29,7 @@ public class SwaggerConfig {
                         .contact(new Contact().name("FarmStack"))
                         .license(new License().name("Proprietary")))
                 .servers(List.of(
-                        new Server().url("http://localhost:8086").description("Direct"),
+                        new Server().url("http://localhost:" + serverPort).description("Direct"),
                         new Server().url("http://localhost:8080/api/v1/users").description("Via Gateway")
                 ))
                 .addSecurityItem(new SecurityRequirement().addList("BearerAuth"))

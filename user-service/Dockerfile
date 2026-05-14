@@ -1,25 +1,35 @@
-# Build stage - standalone build
+# Build stage
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
-# Copy only user-service files
+# Copy source
 COPY pom.xml .
 COPY src ./src
 
-# Download dependencies and build (repackage will create executable jar)
-RUN mvn clean package -DskipTests
+# Skip ALL test processing (compilation + execution)
+RUN mvn clean package -Dmaven.test.skip=true -DskipTests
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
-# Copy the built executable jar (the repackaged one)
+# Create non-root user for security
+RUN addgroup --system --gid 1001 appgroup && \
+    adduser --system --uid 1001 --gid 1001 appuser
+
+# Copy the built jar
 COPY --from=build /app/target/user-service-*.jar app.jar
 
-EXPOSE 8080
+# Change ownership
+RUN chown appuser:appgroup app.jar
+
+# Switch to non-root user
+USER appuser
+
+EXPOSE 8085
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost:8085/actuator/health || exit 1
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

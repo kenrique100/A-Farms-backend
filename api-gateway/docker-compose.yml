@@ -13,6 +13,11 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       ADMIN_KEY: ${ADMIN_KEY}
       LOGGING_LEVEL_COM_AFARMS: ${LOG_LEVEL}
+      INCOME_SERVICE_URL: ${INCOME_SERVICE_URL}
+      EXPENSE_SERVICE_URL: ${EXPENSE_SERVICE_URL}
+      INVESTMENT_SERVICE_URL: ${INVESTMENT_SERVICE_URL}
+      TRANSACTION_SERVICE_URL: ${TRANSACTION_SERVICE_URL}
+      USER_SERVICE_URL: ${USER_SERVICE_URL}
     env_file:
       - .env
     networks:
@@ -50,6 +55,12 @@ services:
     networks:
       - dev-network
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "http://localhost:8080/health/ready" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   # PostgreSQL for Keycloak
   postgres-keycloak:
