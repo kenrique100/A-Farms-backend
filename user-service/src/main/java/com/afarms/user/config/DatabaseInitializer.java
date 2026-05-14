@@ -1,7 +1,7 @@
 package com.afarms.user.config;
 
 import com.afarms.user.model.entity.User;
-import com.afarms.user.repository.UserRepository;
+import com.afarms.user.repository.AuthRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class DatabaseInitializer implements CommandLineRunner {
 
-    private final UserRepository userRepository;
+    private final AuthRepository authRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Value("${app.admin.email}")
@@ -35,8 +35,8 @@ public class DatabaseInitializer implements CommandLineRunner {
     public void run(String... args) {
         log.info("Initializing database with default admin user...");
 
-        boolean adminExists = userRepository.findByEmail(adminEmail).isPresent() ||
-                (adminUsername != null && userRepository.findByEmail(adminUsername).isPresent());
+        boolean adminExists = authRepository.findByEmail(adminEmail).isPresent() ||
+                (adminUsername != null && authRepository.findByEmail(adminUsername).isPresent());
 
         if (!adminExists) {
             log.info("Creating default admin user...");
@@ -47,15 +47,15 @@ public class DatabaseInitializer implements CommandLineRunner {
                     .role("ADMIN")
                     .farmId(null)
                     .build();
-            userRepository.save(admin);
+            authRepository.save(admin);
             log.info("Default admin created. Admin Key: {}", adminKey);
         } else {
             log.info("Admin already exists.");
         }
 
         log.info("Stats - Masters: {}, SubUsers: {}, Admins: {}",
-                userRepository.findByRole("MASTER").size(),
-                userRepository.findByRole("SUB_USER").size(),
-                userRepository.findByRole("ADMIN").size());
+                authRepository.findByRole("MASTER").size(),
+                authRepository.findByRole("SUB_USER").size(),
+                authRepository.findByRole("ADMIN").size());
     }
 }
