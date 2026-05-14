@@ -9,19 +9,19 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class GatewayRoutesConfig {
 
-    @Value("${services.income.url:http://income-service:8080}")
+    @Value("${services.income.url:http://localhost:8081}")
     private String incomeServiceUrl;
 
-    @Value("${services.expense.url:http://expense-service:8080}")
+    @Value("${services.expense.url:http://localhost:8082}")
     private String expenseServiceUrl;
 
-    @Value("${services.investment.url:http://investment-service:8080}")
+    @Value("${services.investment.url:http://localhost:8083}")
     private String investmentServiceUrl;
 
-    @Value("${services.transaction.url:http://transaction-service:8080}")
+    @Value("${services.transaction.url:http://localhost:8084}")
     private String transactionServiceUrl;
 
-    @Value("${services.user.url:http://user-service:8080}")
+    @Value("${services.user.url:http://localhost:8085}")
     private String userServiceUrl;
 
     @Bean
