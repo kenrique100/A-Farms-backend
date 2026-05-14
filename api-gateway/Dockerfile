@@ -16,6 +16,10 @@ RUN mvn clean package -Dmaven.test.skip=true
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends wget && \
+    rm -rf /var/lib/apt/lists/*
+
 # Create non-root user for security
 RUN addgroup --system --gid 1001 appgroup && \
     adduser --system --uid 1001 --gid 1001 appuser
