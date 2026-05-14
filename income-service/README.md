@@ -11,3 +11,8 @@ Run:
 cp ../.env.example ../.env
 docker compose up -d --build
 ```
+
+Local standalone run (without api-gateway):
+```bash
+../mvnw spring-boot:run
+```
