@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public class MasterRegisterRequest {
+
     @NotBlank @Email
     private String email;
 
@@ -13,5 +14,5 @@ public class MasterRegisterRequest {
     private String password;
 
     @NotBlank
-    private String adminKey;
+    private String farmName;
 }

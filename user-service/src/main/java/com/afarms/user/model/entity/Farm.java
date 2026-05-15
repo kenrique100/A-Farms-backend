@@ -12,31 +12,22 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "users")
+@Table(name = "farms")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class Farm {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false, unique = true, length = 100)
-    private String email;
+    private String name;
 
-    @Column(unique = true)
-    private String username;
-
-    @Column(nullable = false)
-    private String password;
-
-    @Column(nullable = false, length = 20)
-    private String role;
-
-    @Column(name = "farm_id", nullable = true)
-    private UUID farmId;
+    @Column(name = "master_id")
+    private UUID masterId;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
