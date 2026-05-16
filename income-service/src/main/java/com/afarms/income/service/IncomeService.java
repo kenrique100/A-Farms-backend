@@ -6,9 +6,9 @@ import java.util.List;
 
 public interface IncomeService {
 
-    IncomeResponseDTO create(IncomeRequestDTO request);
+    IncomeResponseDTO create(String authHeader, IncomeRequestDTO request);
 
-    List<IncomeResponseDTO> findAll();
+    List<IncomeResponseDTO> findAll(String authHeader);
 
-    IncomeResponseDTO findById(Long id);
+    IncomeResponseDTO findById(String authHeader, Long id);
 }

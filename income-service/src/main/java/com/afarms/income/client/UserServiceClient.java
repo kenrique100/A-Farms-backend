@@ -1,8 +1,8 @@
-package com.afarms.transaction.client;
+package com.afarms.income.client;
 
-import com.afarms.transaction.exception.ExternalServiceException;
-import com.afarms.transaction.exception.UnauthorizedException;
-import com.afarms.transaction.model.dto.TokenValidationResponse;
+import com.afarms.income.exception.ExternalServiceException;
+import com.afarms.income.exception.UnauthorizedException;
+import com.afarms.income.model.dto.TokenValidationResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
