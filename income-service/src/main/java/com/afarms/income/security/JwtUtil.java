@@ -8,9 +8,6 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-
 @Component
 public class JwtUtil {
 
@@ -24,7 +21,7 @@ public class JwtUtil {
         try {
             extractAllClaims(token);
             return true;
-        } catch (Exception ex) {
+        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException ex) {
             return false;
         }
     }
@@ -33,25 +30,7 @@ public class JwtUtil {
         return extractAllClaims(token).getSubject();
     }
 
-    public String extractRole(String token) {
-        try {
-            return extractAllClaims(token).get("role", String.class);
-        } catch (Exception ex) {
-            return "USER";
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<String> extractRoles(String token) {
-        try {
-            List<String> roles = extractAllClaims(token).get("roles", List.class);
-            return roles == null ? List.of() : roles;
-        } catch (Exception ex) {
-            return List.of();
-        }
-    }
-
-    public Map<String, Object> extractClaims(String token) {
+    public Claims extractClaims(String token) {
         return extractAllClaims(token);
     }
 
