@@ -16,7 +16,7 @@ import java.util.List;
 @Configuration
 public class SwaggerConfig {
 
-    @Value("${server.port}")
+    @Value("${server.port:8081}")
     private int serverPort;
 
     @Bean
@@ -24,33 +24,16 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("Income Service API")
-                        .description("Income management, tracking and reporting service for FarmStack")
+                        .description("Income management for farms – Master & Sub‑user CRUD")
                         .version("1.0")
-                        .contact(new Contact()
-                                .name("FarmStack Support")
-                                .email("support@farmstack.com")
-                                .url("https://farmstack.com"))
-                        .license(new License()
-                                .name("Proprietary")
-                                .url("https://farmstack.com/terms")))
+                        .contact(new Contact().name("FarmStack").email("support@farmstack.com"))
+                        .license(new License().name("Proprietary")))
                 .servers(List.of(
-                        new Server()
-                                .url("http://localhost:" + serverPort)
-                                .description("Direct access to Income Service"),
-                        new Server()
-                                .url("http://localhost:8080/api/v1/incomes")
-                                .description("Via API Gateway"),
-                        new Server()
-                                .url("${API_GATEWAY_URL:/api/v1/incomes}")
-                                .description("Docker environment via Gateway")
-                ))
+                        new Server().url("http://localhost:" + serverPort).description("Direct"),
+                        new Server().url("http://localhost:8080/api/v1/incomes").description("Via Gateway")))
                 .addSecurityItem(new SecurityRequirement().addList("BearerAuth"))
-                .schemaRequirement("BearerAuth",
-                        new SecurityScheme()
-                                .name("BearerAuth")
-                                .type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT")
-                                .description("JWT token obtained from User Service authentication"));
+                .schemaRequirement("BearerAuth", new SecurityScheme()
+                        .name("BearerAuth").type(SecurityScheme.Type.HTTP)
+                        .scheme("bearer").bearerFormat("JWT"));
     }
 }
