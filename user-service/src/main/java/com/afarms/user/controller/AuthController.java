@@ -1,6 +1,7 @@
 package com.afarms.user.controller;
 
 import com.afarms.user.model.dto.*;
+import com.afarms.user.security.RoleConstants;
 import com.afarms.user.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -59,9 +60,9 @@ public class AuthController {
     public ResponseEntity<UserResponse> getUserById(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable UUID userId) {
-        TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
+        TokenValidationResponse tokenInfo = getTokenInfo(authHeader);
         // Only admin or the user themselves can view user details
-        if (!"ADMIN".equals(tokenInfo.getRole()) && !tokenInfo.getUserId().equals(userId)) {
+        if (!hasRole(tokenInfo, RoleConstants.ADMIN) && !tokenInfo.getUserId().equals(userId)) {
             return ResponseEntity.status(403).build();
         }
         return ResponseEntity.ok(authService.getUserById(userId));
@@ -69,8 +70,8 @@ public class AuthController {
 
     @GetMapping("/farm/users")
     public ResponseEntity<List<UserListResponse>> getFarmUsers(@RequestHeader("Authorization") String authHeader) {
-        TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
-        if (!"MASTER".equals(tokenInfo.getRole())) {
+        TokenValidationResponse tokenInfo = getTokenInfo(authHeader);
+        if (!hasRole(tokenInfo, RoleConstants.MASTER)) {
             return ResponseEntity.status(403).build();
         }
         return ResponseEntity.ok(authService.getUsersByFarmId(tokenInfo.getFarmId()));
@@ -78,8 +79,8 @@ public class AuthController {
 
     @GetMapping("/admin/all-users")
     public ResponseEntity<List<UserListResponse>> getAllUsers(@RequestHeader("Authorization") String authHeader) {
-        TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
-        if (!"ADMIN".equals(tokenInfo.getRole())) {
+        TokenValidationResponse tokenInfo = getTokenInfo(authHeader);
+        if (!hasRole(tokenInfo, RoleConstants.ADMIN)) {
             return ResponseEntity.status(403).build();
         }
         return ResponseEntity.ok(authService.getAllUsers());
@@ -108,8 +109,8 @@ public class AuthController {
             @RequestHeader("Authorization") String authHeader,
             @PathVariable UUID subUserId,
             @Valid @RequestBody UpdateUserRequest request) {
-        TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
-        if (!"MASTER".equals(tokenInfo.getRole())) {
+        TokenValidationResponse tokenInfo = getTokenInfo(authHeader);
+        if (!hasRole(tokenInfo, RoleConstants.MASTER)) {
             return ResponseEntity.status(403).build();
         }
         UserResponse updated = authService.updateSubUserByMaster(tokenInfo.getFarmId(), subUserId, request);
@@ -121,8 +122,8 @@ public class AuthController {
             @RequestHeader("Authorization") String authHeader,
             @PathVariable UUID userId,
             @Valid @RequestBody UpdateUserRequest request) {
-        TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
-        if (!"ADMIN".equals(tokenInfo.getRole())) {
+        TokenValidationResponse tokenInfo = getTokenInfo(authHeader);
+        if (!hasRole(tokenInfo, RoleConstants.ADMIN)) {
             return ResponseEntity.status(403).build();
         }
         UserResponse updated = authService.updateUserByAdmin(userId, request);
@@ -140,8 +141,8 @@ public class AuthController {
     public ResponseEntity<String> deleteUserByAdmin(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable UUID userId) {
-        TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
-        if (!"ADMIN".equals(tokenInfo.getRole())) {
+        TokenValidationResponse tokenInfo = getTokenInfo(authHeader);
+        if (!hasRole(tokenInfo, RoleConstants.ADMIN)) {
             return ResponseEntity.status(403).body("Only ADMIN can delete users");
         }
         authService.deleteUserByAdmin(userId);
@@ -152,8 +153,8 @@ public class AuthController {
     public ResponseEntity<String> deleteSubUserByMaster(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable UUID subUserId) {
-        TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
-        if (!"MASTER".equals(tokenInfo.getRole())) {
+        TokenValidationResponse tokenInfo = getTokenInfo(authHeader);
+        if (!hasRole(tokenInfo, RoleConstants.MASTER)) {
             return ResponseEntity.status(403).body("Only MASTER can delete sub-users");
         }
         authService.deleteSubUserByMaster(tokenInfo.getFarmId(), subUserId);
@@ -162,8 +163,8 @@ public class AuthController {
 
     @DeleteMapping("/master/farm")
     public ResponseEntity<String> deleteMyFarm(@RequestHeader("Authorization") String authHeader) {
-        TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
-        if (!"MASTER".equals(tokenInfo.getRole())) {
+        TokenValidationResponse tokenInfo = getTokenInfo(authHeader);
+        if (!hasRole(tokenInfo, RoleConstants.MASTER)) {
             return ResponseEntity.status(403).body("Only MASTER can delete farms");
         }
         authService.deleteFarmAndAllUsers(tokenInfo.getFarmId(), tokenInfo.getFarmId());
@@ -174,8 +175,8 @@ public class AuthController {
     public ResponseEntity<String> deleteFarmByAdmin(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable UUID farmId) {
-        TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
-        if (!"ADMIN".equals(tokenInfo.getRole())) {
+        TokenValidationResponse tokenInfo = getTokenInfo(authHeader);
+        if (!hasRole(tokenInfo, RoleConstants.ADMIN)) {
             return ResponseEntity.status(403).body("Only ADMIN can delete farms");
         }
         authService.deleteFarmByAdmin(farmId);
@@ -184,8 +185,8 @@ public class AuthController {
 
     @DeleteMapping("/admin/delete-all-sub-users")
     public ResponseEntity<String> deleteAllSubUsers(@RequestHeader("Authorization") String authHeader) {
-        TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
-        if (!"ADMIN".equals(tokenInfo.getRole())) {
+        TokenValidationResponse tokenInfo = getTokenInfo(authHeader);
+        if (!hasRole(tokenInfo, RoleConstants.ADMIN)) {
             return ResponseEntity.status(403).body("Only ADMIN can perform this action");
         }
         int deletedCount = authService.deleteAllSubUsers();
@@ -194,8 +195,8 @@ public class AuthController {
 
     @GetMapping("/farm/details")
     public ResponseEntity<FarmDetailsResponse> getFarmDetails(@RequestHeader("Authorization") String authHeader) {
-        TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
-        if (!"MASTER".equals(tokenInfo.getRole())) {
+        TokenValidationResponse tokenInfo = getTokenInfo(authHeader);
+        if (!hasRole(tokenInfo, RoleConstants.MASTER)) {
             return ResponseEntity.status(403).build();
         }
         FarmDetailsResponse farmDetails = authService.getFarmDetails(tokenInfo.getFarmId());
@@ -204,12 +205,20 @@ public class AuthController {
 
     @GetMapping("/admin/all-farms")
     public ResponseEntity<FarmsListResponse> getAllFarms(@RequestHeader("Authorization") String authHeader) {
-        TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
-        if (!"ADMIN".equals(tokenInfo.getRole())) {
+        TokenValidationResponse tokenInfo = getTokenInfo(authHeader);
+        if (!hasRole(tokenInfo, RoleConstants.ADMIN)) {
             return ResponseEntity.status(403).build();
         }
 
         FarmsListResponse allFarms = authService.getAllFarms();
         return ResponseEntity.ok(allFarms);
+    }
+
+    private TokenValidationResponse getTokenInfo(String authHeader) {
+        return authService.validateToken(authHeader);
+    }
+
+    private boolean hasRole(TokenValidationResponse tokenInfo, String role) {
+        return role.equals(tokenInfo.getRole());
     }
 }

@@ -134,13 +134,10 @@ public class AuthServiceImpl implements AuthService {
     public UserResponse updateUser(UUID userId, UpdateUserRequest request, String requesterRole) {
         User user = userValidation.validateAndGetUser(userId);
 
-        userValidation.updateUserEmail(user, request.getEmail(), userId);
-        userValidation.updateUserUsername(user, request.getUsername(), userId);
+        applyBasicUserUpdates(user, request, userId);
         userValidation.updateUserRole(user, request.getRole(), requesterRole);
 
-        User updated = authRepository.save(user);
-        log.info("User updated: {}", updated.getEmail());
-        return responseBuilder.buildUserResponse(updated);
+        return saveAndBuildUserResponse(user, "User updated: {}");
     }
 
     @Override
@@ -167,12 +164,9 @@ public class AuthServiceImpl implements AuthService {
         userValidation.validateSubUserRole(subUser);
         userValidation.validateMasterCannotChangeRole(request.getRole(), subUser.getRole());
 
-        userValidation.updateUserEmail(subUser, request.getEmail(), subUserId);
-        userValidation.updateUserUsername(subUser, request.getUsername(), subUserId);
+        applyBasicUserUpdates(subUser, request, subUserId);
 
-        User updated = authRepository.save(subUser);
-        log.info("Master updated sub-user: {}", updated.getEmail());
-        return responseBuilder.buildUserResponse(updated);
+        return saveAndBuildUserResponse(subUser, "Master updated sub-user: {}");
     }
 
     @Override
@@ -180,13 +174,10 @@ public class AuthServiceImpl implements AuthService {
     public UserResponse updateUserByAdmin(UUID userId, UpdateUserRequest request) {
         User user = userValidation.validateAndGetUser(userId);
 
-        userValidation.updateUserEmail(user, request.getEmail(), userId);
-        userValidation.updateUserUsername(user, request.getUsername(), userId);
+        applyBasicUserUpdates(user, request, userId);
         userValidation.updateUserRoleAdmin(user, request.getRole());
 
-        User updated = authRepository.save(user);
-        log.info("Admin updated user: {}", updated.getEmail());
-        return responseBuilder.buildUserResponse(updated);
+        return saveAndBuildUserResponse(user, "Admin updated user: {}");
     }
 
     @Override
@@ -218,5 +209,16 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public int deleteAllSubUsers() {
         return userDeleteUtils.deleteAllSubUsers();
+    }
+
+    private void applyBasicUserUpdates(User user, UpdateUserRequest request, UUID userId) {
+        userValidation.updateUserEmail(user, request.getEmail(), userId);
+        userValidation.updateUserUsername(user, request.getUsername(), userId);
+    }
+
+    private UserResponse saveAndBuildUserResponse(User user, String logMessage) {
+        User updated = authRepository.save(user);
+        log.info(logMessage, updated.getEmail());
+        return responseBuilder.buildUserResponse(updated);
     }
 }

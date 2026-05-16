@@ -101,7 +101,7 @@ public class UserValidationUtils {
 
     public void validateRoleChange(String newRole, String requesterRole) {
         if (newRole != null) {
-            if (!"ADMIN".equals(requesterRole)) {
+            if (!RoleConstants.ADMIN.equals(requesterRole)) {
                 throw new BusinessException("Only ADMIN can change user role");
             }
             String normalizedRole = RoleConstants.normalizeRole(newRole);
