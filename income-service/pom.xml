@@ -133,7 +133,7 @@
               <artifactId>lombok</artifactId>
             </exclude>
           </excludes>
-          <mainClass>com.farmstack.income.IncomeServiceApplication</mainClass>
+          <mainClass>com.afarms.income.IncomeServiceApplication</mainClass>
         </configuration>
         <executions>
           <execution>
