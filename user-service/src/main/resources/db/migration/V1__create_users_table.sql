@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(100) UNIQUE,
     password VARCHAR(255) NOT NULL,
     role VARCHAR(20) NOT NULL,
-    farm_id UUID NULL,  -- explicitly NULL
+    farm_id UUID NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_users_farm FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE SET NULL
