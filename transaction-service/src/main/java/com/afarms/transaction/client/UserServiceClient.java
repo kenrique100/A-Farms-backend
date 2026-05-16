@@ -37,8 +37,6 @@ public class UserServiceClient {
                 throw new ExternalServiceException("User-service returned empty token validation response");
             }
             return response;
-        } catch (UnauthorizedException | ExternalServiceException ex) {
-            throw ex;
         } catch (RestClientException ex) {
             throw new ExternalServiceException("Failed to communicate with user-service", ex);
         }

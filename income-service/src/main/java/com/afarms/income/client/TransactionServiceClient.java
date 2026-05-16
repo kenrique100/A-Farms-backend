@@ -41,8 +41,6 @@ public class TransactionServiceClient {
                 throw new ExternalServiceException("Transaction-service returned invalid transaction response");
             }
             return response;
-        } catch (ExternalServiceException ex) {
-            throw ex;
         } catch (RestClientException ex) {
             throw new ExternalServiceException("Failed to communicate with transaction-service", ex);
         }

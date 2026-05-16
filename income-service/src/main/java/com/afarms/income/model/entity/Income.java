@@ -29,10 +29,10 @@ public class Income {
     @Column(nullable = false)
     private LocalDate occurredAt;
 
-    @Column(nullable = false)
+    @Column
     private UUID farmId;
 
-    @Column(nullable = false)
+    @Column
     private UUID userId;
 
     @Column
