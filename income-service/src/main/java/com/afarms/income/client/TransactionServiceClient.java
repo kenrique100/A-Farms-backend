@@ -30,19 +30,19 @@ public class TransactionServiceClient {
                     .body(request)
                     .retrieve()
                     .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
-                        throw new ExternalServiceException("Transaction-service rejected income transaction request");
+                        throw new ExternalServiceException("Transaction service rejected request");
                     })
                     .onStatus(HttpStatusCode::is5xxServerError, (req, res) -> {
-                        throw new ExternalServiceException("Transaction-service is currently unavailable");
+                        throw new ExternalServiceException("Transaction service unavailable");
                     })
                     .body(TransactionCreateResponseDTO.class);
 
             if (response == null || response.getId() == null) {
-                throw new ExternalServiceException("Transaction-service returned invalid transaction response");
+                throw new ExternalServiceException("Invalid transaction response");
             }
             return response;
         } catch (RestClientException ex) {
-            throw new ExternalServiceException("Failed to communicate with transaction-service", ex);
+            throw new ExternalServiceException("Failed to communicate with transaction service", ex);
         }
     }
 }
