@@ -7,6 +7,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface FarmRepository extends JpaRepository<Farm, UUID> {
-    Optional<Farm> findByName(String name);
     boolean existsByName(String name);
 }
