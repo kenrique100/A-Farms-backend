@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+
 @Component
 public class JwtUtil {
 
@@ -21,13 +22,9 @@ public class JwtUtil {
         try {
             extractAllClaims(token);
             return true;
-        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException ex) {
+        } catch (Exception e) {
             return false;
         }
-    }
-
-    public String extractEmail(String token) {
-        return extractAllClaims(token).getSubject();
     }
 
     public Claims extractClaims(String token) {
