@@ -1,54 +1,42 @@
 package com.afarms.transaction.model.mapper;
 
-import com.afarms.transaction.model.dto.InternalIncomeTransactionRequestDTO;
-import com.afarms.transaction.model.dto.TransactionRequestDTO;
-import com.afarms.transaction.model.dto.TransactionResponseDTO;
+import com.afarms.transaction.model.dto.TransactionCreateRequest;
+import com.afarms.transaction.model.dto.TransactionCreateResponse;
 import com.afarms.transaction.model.entity.Transaction;
-import java.util.UUID;
+import com.afarms.transaction.model.enums.TransactionStatus;
+import com.afarms.transaction.model.enums.TransactionType;
 
 public final class TransactionMapper {
 
-    private TransactionMapper() {
+    private TransactionMapper() {}
+
+    public static Transaction toIncomeEntity(TransactionCreateRequest request) {
+        TransactionType type;
+        try {
+            type = TransactionType.valueOf(request.getType().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            type = TransactionType.INCOME;
+        }
+
+        return Transaction.builder()
+                .incomeId(request.getIncomeId())
+                // .expenseId(request.getExpenseId())
+                // .investmentId(request.getInvestmentId())
+                .farmId(request.getFarmId())
+                .userId(request.getUserId())
+                .description(request.getDescription())
+                .amount(request.getAmount())
+                .occurredAt(request.getOccurredAt())
+                .type(type)
+                .status(TransactionStatus.COMPLETED)
+                .build();
     }
 
-    public static Transaction toManualEntity(TransactionRequestDTO request, UUID farmId, UUID userId) {
-        Transaction entity = new Transaction();
-        entity.setDescription(request.getDescription());
-        entity.setAmount(request.getAmount());
-        entity.setOccurredAt(request.getOccurredAt());
-        entity.setFarmId(farmId);
-        entity.setUserId(userId);
-        entity.setType("MANUAL");
-        entity.setSourceService("TRANSACTION_SERVICE");
-        entity.setSourceReferenceId(null);
-        return entity;
-    }
-
-    public static Transaction toIncomeEntity(InternalIncomeTransactionRequestDTO request) {
-        Transaction entity = new Transaction();
-        entity.setDescription(request.getDescription());
-        entity.setAmount(request.getAmount());
-        entity.setOccurredAt(request.getOccurredAt());
-        entity.setFarmId(request.getFarmId());
-        entity.setUserId(request.getUserId());
-        entity.setType("INCOME");
-        entity.setSourceService("INCOME_SERVICE");
-        entity.setSourceReferenceId(request.getIncomeId());
-        return entity;
-    }
-
-    public static TransactionResponseDTO toResponse(Transaction entity) {
-        TransactionResponseDTO response = new TransactionResponseDTO();
-        response.setId(entity.getId());
-        response.setDescription(entity.getDescription());
-        response.setAmount(entity.getAmount());
-        response.setOccurredAt(entity.getOccurredAt());
-        response.setFarmId(entity.getFarmId());
-        response.setUserId(entity.getUserId());
-        response.setType(entity.getType());
-        response.setSourceService(entity.getSourceService());
-        response.setSourceReferenceId(entity.getSourceReferenceId());
-        response.setCreatedAt(entity.getCreatedAt());
-        return response;
+    public static TransactionCreateResponse toResponse(Transaction entity) {
+        return TransactionCreateResponse.builder()
+                .id(entity.getId())
+                .status(entity.getStatus().name())
+                .message("Transaction recorded successfully")
+                .build();
     }
 }

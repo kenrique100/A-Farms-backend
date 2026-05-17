@@ -1,34 +1,19 @@
 package com.afarms.transaction.model.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.UUID;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class TokenValidationResponse {
-
     private UUID userId;
-    private UUID farmId;
+    private String username;
+    private String email;
+    private Boolean isValid;
     private String role;
-
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public void setUserId(UUID userId) {
-        this.userId = userId;
-    }
-
-    public UUID getFarmId() {
-        return farmId;
-    }
-
-    public void setFarmId(UUID farmId) {
-        this.farmId = farmId;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
+    private UUID farmId;
 }

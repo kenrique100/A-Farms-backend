@@ -1,12 +1,15 @@
 package com.afarms.transaction.model.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import com.afarms.transaction.model.enums.TransactionStatus;
+import com.afarms.transaction.model.enums.TransactionType;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,123 +17,53 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "transactions")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Transaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String description;
+    @Column(name = "income_id")
+    private Long incomeId;
 
-    @Column(nullable = false)
-    private BigDecimal amount;
+    // @Column(name = "expense_id")
+    // private Long expenseId;
 
-    @Column(nullable = false)
-    private LocalDate occurredAt;
+    // @Column(name = "investment_id")
+    // private Long investmentId;
 
-    @Column
+    @Column(name = "farm_id", nullable = false)
     private UUID farmId;
 
-    @Column
+    @Column(name = "user_id", nullable = false)
     private UUID userId;
 
     @Column(nullable = false)
-    private String type;
+    private String description;
 
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal amount;
+
+    @Column(name = "occurred_at", nullable = false)
+    private LocalDate occurredAt;
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String sourceService;
+    private TransactionType type;
 
-    @Column
-    private Long sourceReferenceId;
-
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    private TransactionStatus status;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @PrePersist
-    public void prePersist() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-        }
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
-    public LocalDate getOccurredAt() {
-        return occurredAt;
-    }
-
-    public void setOccurredAt(LocalDate occurredAt) {
-        this.occurredAt = occurredAt;
-    }
-
-    public UUID getFarmId() {
-        return farmId;
-    }
-
-    public void setFarmId(UUID farmId) {
-        this.farmId = farmId;
-    }
-
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public void setUserId(UUID userId) {
-        this.userId = userId;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getSourceService() {
-        return sourceService;
-    }
-
-    public void setSourceService(String sourceService) {
-        this.sourceService = sourceService;
-    }
-
-    public Long getSourceReferenceId() {
-        return sourceReferenceId;
-    }
-
-    public void setSourceReferenceId(Long sourceReferenceId) {
-        this.sourceReferenceId = sourceReferenceId;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

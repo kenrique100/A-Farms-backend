@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
 
 @Component
 public class UserServiceClient {
@@ -15,30 +14,27 @@ public class UserServiceClient {
     private final RestClient restClient;
 
     public UserServiceClient(RestClient.Builder restClientBuilder,
-                             @Value("${services.user.url:http://localhost:8085}") String userServiceUrl) {
+                             @Value("${services.user.url}") String userServiceUrl) {
         this.restClient = restClientBuilder.baseUrl(userServiceUrl).build();
     }
 
     public TokenValidationResponse validateToken(String authHeader) {
         try {
-            TokenValidationResponse response = restClient.post()
+            return restClient.post()
                     .uri("/api/v1/users/validate")
                     .header("Authorization", authHeader)
                     .retrieve()
-                    .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
-                        throw new UnauthorizedException("Unauthorized access token");
+                    .onStatus(HttpStatusCode::is4xxClientError, (request, response) -> {
+                        throw new UnauthorizedException("Invalid or expired token");
                     })
-                    .onStatus(HttpStatusCode::is5xxServerError, (req, res) -> {
-                        throw new ExternalServiceException("User-service is currently unavailable");
+                    .onStatus(HttpStatusCode::is5xxServerError, (request, response) -> {
+                        throw new ExternalServiceException("User service unavailable");
                     })
                     .body(TokenValidationResponse.class);
-
-            if (response == null) {
-                throw new ExternalServiceException("User-service returned empty token validation response");
-            }
-            return response;
-        } catch (RestClientException ex) {
-            throw new ExternalServiceException("Failed to communicate with user-service", ex);
+        } catch (UnauthorizedException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new ExternalServiceException("Failed to communicate with user service: " + ex.getMessage(), ex);
         }
     }
 }

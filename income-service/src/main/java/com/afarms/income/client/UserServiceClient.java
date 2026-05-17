@@ -39,6 +39,13 @@ public class UserServiceClient {
             if (response == null || response.getUserId() == null) {
                 throw new ExternalServiceException("Invalid token validation response");
             }
+
+            // If username is not populated by user service, fetch it separately
+            if (response.getUsername() == null) {
+                UserDetailsResponse userDetails = getUserById(response.getUserId(), authHeader);
+                response.setUsername(userDetails.getUsername());
+            }
+
             return response;
         } catch (RestClientException ex) {
             throw new ExternalServiceException("Failed to communicate with user service", ex);
