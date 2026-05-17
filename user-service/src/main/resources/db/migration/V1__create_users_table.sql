@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS farms (
-                                     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
     master_id UUID UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS farms (
     );
 
 CREATE TABLE IF NOT EXISTS users (
-                                     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     email VARCHAR(100) NOT NULL UNIQUE,
     username VARCHAR(100) UNIQUE,
     password VARCHAR(255) NOT NULL,
