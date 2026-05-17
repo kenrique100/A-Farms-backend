@@ -5,18 +5,15 @@ import com.afarms.income.exception.BusinessException;
 import com.afarms.income.exception.UnauthorizedException;
 import com.afarms.income.model.dto.IncomeRequestDTO;
 import com.afarms.income.model.dto.TokenValidationResponse;
+import com.afarms.income.model.enums.UserRole;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.util.Set;
 
 @Component
 @Slf4j
 public class IncomeValidationUtils {
-
-    private static final Set<String> WRITE_ALLOWED_ROLES = Set.of("MASTER", "SUB_USER", "ADMIN");
-    private static final Set<String> ALLOWED_ROLES = Set.of("ADMIN", "MASTER", "SUB_USER", "USER");
 
     public void validateAuthorizationHeader(String authHeader) {
         if (authHeader == null || authHeader.isBlank() || !authHeader.startsWith("Bearer ")) {
@@ -28,7 +25,7 @@ public class IncomeValidationUtils {
         if (tokenInfo == null || tokenInfo.getUserId() == null || tokenInfo.getFarmId() == null) {
             throw new UnauthorizedException("Invalid token payload");
         }
-        if (tokenInfo.getRole() == null || !ALLOWED_ROLES.contains(tokenInfo.getRole().toUpperCase())) {
+        if (tokenInfo.getRole() == null || !UserRole.isValid(tokenInfo.getRole())) {
             throw new UnauthorizedException("Invalid user role");
         }
     }
@@ -46,7 +43,7 @@ public class IncomeValidationUtils {
     }
 
     public void validateRoleCanWrite(String role) {
-        if (!WRITE_ALLOWED_ROLES.contains(role.toUpperCase())) {
+        if (!UserRole.isWriteAllowed(role)) {
             throw new AccessDeniedException("User role '" + role + "' is not allowed to write incomes");
         }
     }

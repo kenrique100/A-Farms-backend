@@ -5,32 +5,43 @@ import com.afarms.income.client.UserServiceClient;
 import com.afarms.income.repository.IncomeRepository;
 import com.afarms.income.service.impl.IncomeServiceImpl;
 import com.afarms.income.utils.IncomeBuilderUtils;
+import com.afarms.income.utils.IncomeServiceUtils;
 import com.afarms.income.utils.IncomeValidationUtils;
-import com.afarms.income.utils.ResponseBuilderUtils;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@ExtendWith(MockitoExtension.class)
 class IncomeServiceTest {
+
+    @Mock
+    private IncomeRepository incomeRepository;
+
+    @Mock
+    private UserServiceClient userServiceClient;
+
+    @Mock
+    private TransactionServiceClient transactionServiceClient;
+
+    @Mock
+    private IncomeBuilderUtils builderUtils;
+
+    @Mock
+    private IncomeValidationUtils validationUtils;
+
+    @Mock
+    private IncomeServiceUtils serviceUtils;
+
+
+    @InjectMocks
+    private IncomeServiceImpl incomeService;
 
     @Test
     void shouldCreateServiceImpl() {
-        IncomeRepository repository = Mockito.mock(IncomeRepository.class);
-        UserServiceClient userServiceClient = Mockito.mock(UserServiceClient.class);
-        TransactionServiceClient transactionServiceClient = Mockito.mock(TransactionServiceClient.class);
-        IncomeValidationUtils validationUtils = Mockito.mock(IncomeValidationUtils.class);
-        IncomeBuilderUtils builderUtils = Mockito.mock(IncomeBuilderUtils.class);
-        ResponseBuilderUtils responseBuilder = Mockito.mock(ResponseBuilderUtils.class);
-
-        IncomeServiceImpl service = new IncomeServiceImpl(
-                repository,
-                userServiceClient,
-                transactionServiceClient,
-                validationUtils,
-                builderUtils,
-                responseBuilder
-        );
-        assertNotNull(service);
+        assertNotNull(incomeService);
     }
 }
