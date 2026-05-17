@@ -11,7 +11,7 @@
     <relativePath/>
   </parent>
 
-  <groupId>com.farmstack</groupId>
+  <groupId>com.afarms</groupId>
   <artifactId>income-service</artifactId>
   <version>0.1.0</version>
   <name>income-service</name>
