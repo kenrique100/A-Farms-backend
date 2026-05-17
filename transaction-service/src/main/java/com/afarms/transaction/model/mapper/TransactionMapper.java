@@ -5,8 +5,12 @@ import com.afarms.transaction.model.dto.TransactionCreateResponse;
 import com.afarms.transaction.model.entity.Transaction;
 import com.afarms.transaction.model.enums.TransactionStatus;
 import com.afarms.transaction.model.enums.TransactionType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class TransactionMapper {
+
+    private static final Logger log = LoggerFactory.getLogger(TransactionMapper.class);
 
     private TransactionMapper() {}
 
@@ -15,7 +19,9 @@ public final class TransactionMapper {
         if (request.getType() != null && !request.getType().isBlank()) {
             try {
                 type = TransactionType.valueOf(request.getType().toUpperCase());
-            } catch (IllegalArgumentException ignored) {}
+            } catch (IllegalArgumentException ignored) {
+                log.warn("Invalid transaction type '{}' received, defaulting to INCOME", request.getType());
+            }
         }
 
         return Transaction.builder()
