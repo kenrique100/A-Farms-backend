@@ -30,7 +30,7 @@ public class SwaggerConfig {
                         .license(new License().name("Proprietary")))
                 .servers(List.of(
                         new Server().url("http://localhost:" + serverPort).description("Direct"),
-                        new Server().url("http://localhost:8080/api/v1/incomes").description("Via Gateway")))
+                        new Server().url("http://localhost:8081/api/v1/incomes").description("Via Gateway")))
                 .addSecurityItem(new SecurityRequirement().addList("BearerAuth"))
                 .schemaRequirement("BearerAuth", new SecurityScheme()
                         .name("BearerAuth").type(SecurityScheme.Type.HTTP)

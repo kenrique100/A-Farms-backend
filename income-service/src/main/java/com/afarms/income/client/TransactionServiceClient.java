@@ -17,7 +17,7 @@ public class TransactionServiceClient {
 
     public TransactionServiceClient(RestClient.Builder restClientBuilder,
                                     @Value("${services.transaction.url}") String transactionServiceUrl,
-                                    @Value("${app.integration.transaction-api-key}") String internalApiKey) {
+                                    @Value("${app.integration.internal-api-key}") String internalApiKey) {
         this.restClient = restClientBuilder.baseUrl(transactionServiceUrl).build();
         this.internalApiKey = internalApiKey;
     }
