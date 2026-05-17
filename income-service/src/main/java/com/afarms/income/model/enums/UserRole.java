@@ -3,7 +3,8 @@ package com.afarms.income.model.enums;
 public enum UserRole {
     ADMIN,
     MASTER,
-    SUB_USER;
+    SUB_USER,
+    USER;
 
     public static boolean isWriteAllowed(String role) {
         return role != null && (role.equalsIgnoreCase(MASTER.name()) ||
