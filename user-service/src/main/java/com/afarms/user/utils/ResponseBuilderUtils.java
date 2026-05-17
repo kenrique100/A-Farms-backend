@@ -9,21 +9,32 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class ResponseBuilderUtils {
 
+    AuthServiceImpl authService;
+
     public UserDetails buildUserDetails(User user) {
         return new UserDetails(user.getEmail(), user.getRole(), user.getFarmId());
     }
 
     public TokenValidationResponse buildTokenValidationResponse(String token, JwtUtil jwtUtil) {
+        UUID userId = jwtUtil.extractUserId(token);
+        String username = null;
+        if (userId != null) {
+            // fetch username from repository
+            User user = authRepository.findById(userId).orElse(null);
+            if (user != null) username = user.getUsername();
+        }
         return new TokenValidationResponse(
-                jwtUtil.extractUserId(token),
+                userId,
                 jwtUtil.extractFarmId(token),
-                jwtUtil.extractRole(token)
+                jwtUtil.extractRole(token),
+                username
         );
     }
 
