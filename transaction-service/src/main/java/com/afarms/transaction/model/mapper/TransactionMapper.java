@@ -11,11 +11,11 @@ public final class TransactionMapper {
     private TransactionMapper() {}
 
     public static Transaction toIncomeEntity(TransactionCreateRequest request) {
-        TransactionType type;
-        try {
-            type = TransactionType.valueOf(request.getType().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            type = TransactionType.INCOME;
+        TransactionType type = TransactionType.INCOME;
+        if (request.getType() != null && !request.getType().isBlank()) {
+            try {
+                type = TransactionType.valueOf(request.getType().toUpperCase());
+            } catch (IllegalArgumentException ignored) {}
         }
 
         return Transaction.builder()
