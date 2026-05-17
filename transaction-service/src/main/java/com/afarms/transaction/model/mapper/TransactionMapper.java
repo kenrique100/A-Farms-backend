@@ -19,8 +19,8 @@ public final class TransactionMapper {
         if (request.getType() != null && !request.getType().isBlank()) {
             try {
                 type = TransactionType.valueOf(request.getType().toUpperCase());
-            } catch (IllegalArgumentException ignored) {
-                log.warn("Invalid transaction type '{}' received, defaulting to INCOME", request.getType());
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid transaction type '{}' received, defaulting to INCOME", request.getType(), e);
             }
         }
 
