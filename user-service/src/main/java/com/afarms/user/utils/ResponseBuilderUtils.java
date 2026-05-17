@@ -2,6 +2,7 @@ package com.afarms.user.utils;
 
 import com.afarms.user.model.dto.*;
 import com.afarms.user.model.entity.User;
+import com.afarms.user.repository.AuthRepository;
 import com.afarms.user.security.JwtUtil;
 import com.afarms.user.service.impl.AuthServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ResponseBuilderUtils {
 
-    AuthServiceImpl authService;
+    private final AuthRepository authRepository;  // Added this injection
 
     public UserDetails buildUserDetails(User user) {
         return new UserDetails(user.getEmail(), user.getRole(), user.getFarmId());

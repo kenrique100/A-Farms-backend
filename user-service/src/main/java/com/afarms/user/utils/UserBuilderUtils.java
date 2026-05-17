@@ -25,7 +25,7 @@ public class UserBuilderUtils {
                 .role(RoleConstants.MASTER)
                 .farmId(farmId)
                 .build();
-        return authRepository.save(user);
+        return authRepository.save(user);  // Save and return
     }
 
     public User createSubUser(SubUserRegisterRequest request, PasswordEncoder passwordEncoder, String role) {
@@ -35,6 +35,6 @@ public class UserBuilderUtils {
                 .role(role)
                 .farmId(request.getFarmId())
                 .build();
-        return authRepository.save(user);
+        return authRepository.save(user);  // Save and return
     }
 }
