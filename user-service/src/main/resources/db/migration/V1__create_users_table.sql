@@ -1,6 +1,19 @@
+CREATE TABLE IF NOT EXISTS farms (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    master_id UUID UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
 CREATE TABLE IF NOT EXISTS users (
-    id BIGSERIAL PRIMARY KEY,
-    description VARCHAR(255) NOT NULL,
-    amount NUMERIC(19,2) NOT NULL,
-    occurred_at DATE NOT NULL
-);
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    username VARCHAR(100) UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL,
+    farm_id UUID NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_users_farm FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE SET NULL
+    );

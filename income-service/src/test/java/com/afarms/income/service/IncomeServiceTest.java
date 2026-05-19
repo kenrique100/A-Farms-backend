@@ -1,18 +1,47 @@
 package com.afarms.income.service;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
+import com.afarms.income.client.TransactionServiceClient;
+import com.afarms.income.client.UserServiceClient;
 import com.afarms.income.repository.IncomeRepository;
 import com.afarms.income.service.impl.IncomeServiceImpl;
+import com.afarms.income.utils.IncomeBuilderUtils;
+import com.afarms.income.utils.IncomeServiceUtils;
+import com.afarms.income.utils.IncomeValidationUtils;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+@ExtendWith(MockitoExtension.class)
 class IncomeServiceTest {
+
+    @Mock
+    private IncomeRepository incomeRepository;
+
+    @Mock
+    private UserServiceClient userServiceClient;
+
+    @Mock
+    private TransactionServiceClient transactionServiceClient;
+
+    @Mock
+    private IncomeBuilderUtils builderUtils;
+
+    @Mock
+    private IncomeValidationUtils validationUtils;
+
+    @Mock
+    private IncomeServiceUtils serviceUtils;
+
+
+    @InjectMocks
+    private IncomeServiceImpl incomeService;
 
     @Test
     void shouldCreateServiceImpl() {
-        IncomeRepository repository = Mockito.mock(IncomeRepository.class);
-        IncomeServiceImpl service = new IncomeServiceImpl(repository);
-        assertNotNull(service);
+        assertNotNull(incomeService);
     }
 }

@@ -9,7 +9,7 @@
     <version>3.4.6</version>
     <relativePath/>
   </parent>
-  <groupId>com.farmstack</groupId>
+  <groupId>com.afarms</groupId>
   <artifactId>user-service</artifactId>
   <version>0.1.0</version>
   <name>user-service</name>

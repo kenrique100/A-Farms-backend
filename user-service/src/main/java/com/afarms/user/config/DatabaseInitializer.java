@@ -27,16 +27,12 @@ public class DatabaseInitializer implements CommandLineRunner {
     @Value("${app.admin.password}")
     private String adminPassword;
 
-    @Value("${app.admin-key}")
-    private String adminKey;
-
     @Override
     @Transactional
     public void run(String... args) {
         log.info("Initializing database with default admin user...");
 
-        boolean adminExists = authRepository.findByEmail(adminEmail).isPresent() ||
-                (adminUsername != null && authRepository.findByEmail(adminUsername).isPresent());
+        boolean adminExists = authRepository.findByEmail(adminEmail).isPresent();
 
         if (!adminExists) {
             log.info("Creating default admin user...");
@@ -48,11 +44,12 @@ public class DatabaseInitializer implements CommandLineRunner {
                     .farmId(null)
                     .build();
             authRepository.save(admin);
-            log.info("Default admin created. Admin Key: {}", adminKey);
+            log.info("Default admin created with email: {}", adminEmail);
         } else {
-            log.info("Admin already exists.");
+            log.info("Admin already exists with email: {}", adminEmail);
         }
 
+        // Log statistics
         log.info("Stats - Masters: {}, SubUsers: {}, Admins: {}",
                 authRepository.findByRole("MASTER").size(),
                 authRepository.findByRole("SUB_USER").size(),

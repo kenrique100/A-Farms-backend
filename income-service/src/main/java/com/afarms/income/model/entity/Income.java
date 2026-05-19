@@ -1,16 +1,23 @@
 package com.afarms.income.model.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "incomes")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Income {
 
     @Id
@@ -20,41 +27,22 @@ public class Income {
     @Column(nullable = false)
     private String description;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
-    @Column(nullable = false)
+    @Column(name = "occurred_at", nullable = false)
     private LocalDate occurredAt;
 
-    public Long getId() {
-        return id;
-    }
+    @Column(name = "farm_id")
+    private UUID farmId;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    @Column(name = "user_id")
+    private UUID userId;
 
-    public String getDescription() {
-        return description;
-    }
+    @Column(name = "transaction_id")
+    private Long transactionId;
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
-    public LocalDate getOccurredAt() {
-        return occurredAt;
-    }
-
-    public void setOccurredAt(LocalDate occurredAt) {
-        this.occurredAt = occurredAt;
-    }
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 }

@@ -1,6 +1,5 @@
 package com.afarms.user.security;
 
-
 import com.afarms.user.model.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -52,22 +51,38 @@ public class JwtUtil {
     }
 
     public UUID extractUserId(String token) {
-        String userId = extractAllClaims(token).get("userId", String.class);
-        return userId != null ? UUID.fromString(userId) : null;
+        try {
+            String userId = extractAllClaims(token).get("userId", String.class);
+            return userId != null ? UUID.fromString(userId) : null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public UUID extractFarmId(String token) {
-        String farmId = extractAllClaims(token).get("farmId", String.class);
-        return farmId == null || farmId.isBlank() ? null : UUID.fromString(farmId);
+        try {
+            String farmId = extractAllClaims(token).get("farmId", String.class);
+            return farmId == null || farmId.isBlank() ? null : UUID.fromString(farmId);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public String extractRole(String token) {
-        return extractAllClaims(token).get("role", String.class);
+        try {
+            return extractAllClaims(token).get("role", String.class);
+        } catch (Exception e) {
+            return RoleConstants.DEFAULT_ROLE;
+        }
     }
 
     public List<String> extractRoles(String token) {
-        List<String> roles = extractAllClaims(token).get("roles", List.class);
-        return roles == null ? List.of() : roles;
+        try {
+            List<String> roles = extractAllClaims(token).get("roles", List.class);
+            return roles == null ? List.of() : roles;
+        } catch (Exception e) {
+            return List.of();
+        }
     }
 
     public Map<String, Object> extractClaims(String token) {

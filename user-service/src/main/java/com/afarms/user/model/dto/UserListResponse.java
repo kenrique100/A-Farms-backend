@@ -7,6 +7,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 public class UserListResponse {
+    private UUID userId;
     private String email;
     private String role;
     private UUID farmId;

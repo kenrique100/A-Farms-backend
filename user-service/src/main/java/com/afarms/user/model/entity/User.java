@@ -18,11 +18,12 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, unique = true, length = 100)
     private String email;
 
     @Column(unique = true)
@@ -31,14 +32,17 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    private UUID farmId;
-
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     private String role;
 
+    @Column(name = "farm_id", nullable = true)
+    private UUID farmId;
+
     @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }

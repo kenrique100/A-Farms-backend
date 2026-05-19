@@ -12,4 +12,5 @@ public class TokenValidationResponse {
     private UUID userId;
     private UUID farmId;
     private String role;
+    private String username;
 }
