@@ -9,25 +9,35 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Component
 public class TransactionServiceClient {
 
     private final RestClient restClient;
-    private final String internalApiKey;
 
     public TransactionServiceClient(RestClient.Builder restClientBuilder,
-                                    @Value("${services.transaction.url}") String transactionServiceUrl,
-                                    @Value("${app.integration.internal-api-key}") String internalApiKey) {
+                                    @Value("${services.transaction.url}") String transactionServiceUrl) {
         this.restClient = restClientBuilder.baseUrl(transactionServiceUrl).build();
-        this.internalApiKey = internalApiKey;
     }
 
-    public TransactionCreateResponseDTO createIncomeTransaction(TransactionCreateRequestDTO request) {
+    public TransactionCreateResponseDTO createIncomeTransaction(TransactionCreateRequestDTO incomeTxRequest,
+                                                                String authHeader) {
         try {
+            Map<String, Object> body = new HashMap<>();
+            body.put("type", "INCOME");
+            body.put("referenceId", incomeTxRequest.getIncomeId());
+            body.put("date", incomeTxRequest.getOccurredAt());
+            body.put("amount", incomeTxRequest.getAmount());
+            body.put("createdBy", incomeTxRequest.getDescription());
+            body.put("farmId", incomeTxRequest.getFarmId());
+            body.put("userId", incomeTxRequest.getUserId());
+
             TransactionCreateResponseDTO response = restClient.post()
-                    .uri("/api/v1/transactions/internal/income")
-                    .header("X-Internal-Api-Key", internalApiKey)
-                    .body(request)
+                    .uri("/api/v1/transactions/income")
+                    .header("Authorization", authHeader)
+                    .body(body)
                     .retrieve()
                     .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
                         throw new ExternalServiceException("Transaction service rejected request");

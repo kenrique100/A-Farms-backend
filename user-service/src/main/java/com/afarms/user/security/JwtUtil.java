@@ -2,8 +2,11 @@ package com.afarms.user.security;
 
 import com.afarms.user.model.entity.User;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +18,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Component
+@Slf4j
 public class JwtUtil {
 
     private final SecretKey secretKey;
@@ -37,13 +41,18 @@ public class JwtUtil {
                 .compact();
     }
 
-    public boolean validateToken(String token) {
+    public boolean isTokenValid(String token) {
         try {
             extractAllClaims(token);
             return true;
+        } catch (ExpiredJwtException e) {
+            log.warn("JWT token has expired: {}", e.getMessage());
+        } catch (JwtException e) {
+            log.warn("JWT token is invalid: {}", e.getMessage());
         } catch (Exception e) {
-            return false;
+            log.error("Unexpected JWT validation error: {}", e.getMessage());
         }
+        return false;
     }
 
     public String extractEmail(String token) {
@@ -78,8 +87,15 @@ public class JwtUtil {
 
     public List<String> extractRoles(String token) {
         try {
-            List<String> roles = extractAllClaims(token).get("roles", List.class);
-            return roles == null ? List.of() : roles;
+            // Safe typed extraction — avoids unchecked cast warning
+            Object raw = extractAllClaims(token).get("roles");
+            if (raw instanceof List<?> list) {
+                return list.stream()
+                        .filter(item -> item instanceof String)
+                        .map(String.class::cast)
+                        .toList();
+            }
+            return List.of();
         } catch (Exception e) {
             return List.of();
         }

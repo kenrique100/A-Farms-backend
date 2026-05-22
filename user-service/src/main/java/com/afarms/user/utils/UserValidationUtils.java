@@ -1,6 +1,7 @@
 package com.afarms.user.utils;
 
 import com.afarms.user.exception.BusinessException;
+import com.afarms.user.exception.UnauthorizedException;
 import com.afarms.user.model.entity.User;
 import com.afarms.user.repository.AuthRepository;
 import com.afarms.user.security.RoleConstants;
@@ -31,9 +32,10 @@ public class UserValidationUtils {
                 .orElseThrow(() -> new BusinessException("User not found"));
     }
 
+    // ← Fixed: throws UnauthorizedException instead of BusinessException
     public String validateAndExtractToken(String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new BusinessException("Missing or invalid Authorization header");
+            throw new UnauthorizedException("Missing or invalid Authorization header");
         }
         return authHeader.substring(7);
     }
@@ -112,7 +114,9 @@ public class UserValidationUtils {
     }
 
     public String normalizeSubUserRole(String role) {
-        String normalizedRole = role == null ? RoleConstants.SUB_USER : RoleConstants.normalizeRole(role);
+        String normalizedRole = role == null
+                ? RoleConstants.SUB_USER
+                : RoleConstants.normalizeRole(role);
         if (!RoleConstants.ALLOWED_ROLES.contains(normalizedRole)) {
             throw new BusinessException("Invalid role");
         }
@@ -126,10 +130,11 @@ public class UserValidationUtils {
                 .orElseThrow(() -> new BusinessException("No master found for this farm"));
     }
 
+    // ← Fixed: modern .toList() instead of Collectors.toList()
     public List<User> extractSubUsersFromUsers(List<User> farmUsers) {
         return farmUsers.stream()
                 .filter(u -> RoleConstants.SUB_USER.equals(u.getRole()))
-                .collect(java.util.stream.Collectors.toList());
+                .toList();
     }
 
     public void updateUserEmail(User user, String newEmail, UUID userId) {

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -22,37 +23,44 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         String token = authService.login(request);
         UserDetails userDetails = authService.getUserDetails(request.getEmailOrUsername());
-        return ResponseEntity.ok(new AuthResponse(token, userDetails.getEmail(), userDetails.getRole(), userDetails.getFarmId()));
+        return ResponseEntity.ok(new AuthResponse(
+                token,
+                userDetails.getEmail(),
+                userDetails.getRole(),
+                userDetails.getFarmId()
+        ));
     }
 
     @PostMapping("/validate")
-    public ResponseEntity<TokenValidationResponse> validate(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<TokenValidationResponse> validate(
+            @RequestHeader("Authorization") String authHeader) {
         return ResponseEntity.ok(authService.validateToken(authHeader));
     }
 
     @PostMapping("/register/master")
-    public ResponseEntity<AuthResponse> registerMaster(@Valid @RequestBody MasterRegisterRequest request) {
+    public ResponseEntity<AuthResponse> registerMaster(
+            @Valid @RequestBody MasterRegisterRequest request) {
         return ResponseEntity.ok(authService.registerMaster(request));
     }
 
     @PostMapping("/register/sub-user")
-    public ResponseEntity<String> registerSubUser(@Valid @RequestBody SubUserRegisterRequest request) {
+    public ResponseEntity<String> registerSubUser(
+            @Valid @RequestBody SubUserRegisterRequest request) {
         return ResponseEntity.ok(authService.registerSubUser(request));
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponse> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<UserResponse> getCurrentUser(
+            @RequestHeader("Authorization") String authHeader) {
         log.debug("Getting current user from token");
         TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
-        log.debug("Token info - userId: {}, role: {}", tokenInfo.getUserId(), tokenInfo.getRole());
 
         if (tokenInfo.getUserId() == null) {
             log.error("User ID is null in token");
             return ResponseEntity.status(401).build();
         }
 
-        UserResponse user = authService.getUserById(tokenInfo.getUserId());
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(authService.getUserById(tokenInfo.getUserId()));
     }
 
     @GetMapping("/{userId}")
@@ -60,7 +68,6 @@ public class AuthController {
             @RequestHeader("Authorization") String authHeader,
             @PathVariable UUID userId) {
         TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
-        // Only admin or the user themselves can view user details
         if (!"ADMIN".equals(tokenInfo.getRole()) && !tokenInfo.getUserId().equals(userId)) {
             return ResponseEntity.status(403).build();
         }
@@ -68,7 +75,8 @@ public class AuthController {
     }
 
     @GetMapping("/farm/users")
-    public ResponseEntity<List<UserListResponse>> getFarmUsers(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<List<UserListResponse>> getFarmUsers(
+            @RequestHeader("Authorization") String authHeader) {
         TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
         if (!"MASTER".equals(tokenInfo.getRole())) {
             return ResponseEntity.status(403).build();
@@ -77,7 +85,8 @@ public class AuthController {
     }
 
     @GetMapping("/admin/all-users")
-    public ResponseEntity<List<UserListResponse>> getAllUsers(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<List<UserListResponse>> getAllUsers(
+            @RequestHeader("Authorization") String authHeader) {
         TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
         if (!"ADMIN".equals(tokenInfo.getRole())) {
             return ResponseEntity.status(403).build();
@@ -90,8 +99,8 @@ public class AuthController {
             @RequestHeader("Authorization") String authHeader,
             @Valid @RequestBody UpdateUserRequest request) {
         TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
-        UserResponse updated = authService.updateUser(tokenInfo.getUserId(), request, tokenInfo.getRole());
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(
+                authService.updateUser(tokenInfo.getUserId(), request, tokenInfo.getRole()));
     }
 
     @PutMapping("/change-password")
@@ -112,8 +121,8 @@ public class AuthController {
         if (!"MASTER".equals(tokenInfo.getRole())) {
             return ResponseEntity.status(403).build();
         }
-        UserResponse updated = authService.updateSubUserByMaster(tokenInfo.getFarmId(), subUserId, request);
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(
+                authService.updateSubUserByMaster(tokenInfo.getFarmId(), subUserId, request));
     }
 
     @PutMapping("/admin/user/{userId}")
@@ -125,12 +134,12 @@ public class AuthController {
         if (!"ADMIN".equals(tokenInfo.getRole())) {
             return ResponseEntity.status(403).build();
         }
-        UserResponse updated = authService.updateUserByAdmin(userId, request);
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(authService.updateUserByAdmin(userId, request));
     }
 
     @DeleteMapping("/me")
-    public ResponseEntity<String> deleteCurrentUser(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<String> deleteCurrentUser(
+            @RequestHeader("Authorization") String authHeader) {
         TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
         authService.deleteUserByAdmin(tokenInfo.getUserId());
         return ResponseEntity.ok("Your account has been deleted");
@@ -161,7 +170,8 @@ public class AuthController {
     }
 
     @DeleteMapping("/master/farm")
-    public ResponseEntity<String> deleteMyFarm(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<String> deleteMyFarm(
+            @RequestHeader("Authorization") String authHeader) {
         TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
         if (!"MASTER".equals(tokenInfo.getRole())) {
             return ResponseEntity.status(403).body("Only MASTER can delete farms");
@@ -183,7 +193,8 @@ public class AuthController {
     }
 
     @DeleteMapping("/admin/delete-all-sub-users")
-    public ResponseEntity<String> deleteAllSubUsers(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<String> deleteAllSubUsers(
+            @RequestHeader("Authorization") String authHeader) {
         TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
         if (!"ADMIN".equals(tokenInfo.getRole())) {
             return ResponseEntity.status(403).body("Only ADMIN can perform this action");
@@ -193,23 +204,22 @@ public class AuthController {
     }
 
     @GetMapping("/farm/details")
-    public ResponseEntity<FarmDetailsResponse> getFarmDetails(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<FarmDetailsResponse> getFarmDetails(
+            @RequestHeader("Authorization") String authHeader) {
         TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
         if (!"MASTER".equals(tokenInfo.getRole())) {
             return ResponseEntity.status(403).build();
         }
-        FarmDetailsResponse farmDetails = authService.getFarmDetails(tokenInfo.getFarmId());
-        return ResponseEntity.ok(farmDetails);
+        return ResponseEntity.ok(authService.getFarmDetails(tokenInfo.getFarmId()));
     }
 
     @GetMapping("/admin/all-farms")
-    public ResponseEntity<FarmsListResponse> getAllFarms(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<FarmsListResponse> getAllFarms(
+            @RequestHeader("Authorization") String authHeader) {
         TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
         if (!"ADMIN".equals(tokenInfo.getRole())) {
             return ResponseEntity.status(403).build();
         }
-
-        FarmsListResponse allFarms = authService.getAllFarms();
-        return ResponseEntity.ok(allFarms);
+        return ResponseEntity.ok(authService.getAllFarms());
     }
 }

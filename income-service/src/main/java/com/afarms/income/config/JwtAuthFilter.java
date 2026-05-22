@@ -16,6 +16,7 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -41,23 +42,44 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            if (jwtUtil.validateToken(token)) {
-                Claims claims = jwtUtil.extractClaims(token);
-                String email = claims.getSubject();
-                String role = resolveRole(claims);
 
-                UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(email, null,
-                                List.of(new SimpleGrantedAuthority("ROLE_" + role)));
-                SecurityContextHolder.getContext().setAuthentication(auth);
-                log.debug("Authenticated user: {} with role: {}", email, role);
-            } else {
-                log.warn("Invalid JWT for path: {}", requestURI);
-            }
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.warn("Missing or invalid Authorization header for path: {}", requestURI);
+            sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED,
+                    "Missing or invalid Authorization header");
+            return;
         }
+
+        String token = authHeader.substring(7);
+
+        if (!jwtUtil.validateToken(token)) {
+            log.warn("Invalid or expired JWT token for path: {}", requestURI);
+            sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED,
+                    "Invalid or expired token");
+            return;
+        }
+
+        Claims claims = jwtUtil.extractClaims(token);
+        String email = claims.getSubject();
+        String role = resolveRole(claims);
+
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(email, null,
+                        List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+        SecurityContextHolder.getContext().setAuthentication(auth);
+        log.debug("Authenticated user: {} with role: {}", email, role);
+
         chain.doFilter(request, response);
+    }
+
+    private void sendErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
+        response.setStatus(status);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(String.format(
+                "{\"timestamp\":\"%s\",\"status\":%d,\"message\":\"%s\"}",
+                LocalDateTime.now(), status, message
+        ));
     }
 
     private boolean shouldSkipJwtValidation(String requestURI) {

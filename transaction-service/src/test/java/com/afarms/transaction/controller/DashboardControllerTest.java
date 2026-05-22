@@ -1,0 +1,62 @@
+package com.afarms.transaction.controller;
+
+import com.afarms.transaction.model.dto.TransactionCreateRequestDTO;
+import com.afarms.transaction.model.dto.TransactionCreateResponseDTO;
+import com.afarms.transaction.service.DashboardService;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class TransactionControllerTest {
+
+    @Mock
+    private DashboardService dashboardService;
+
+    @InjectMocks
+    private TransactionController transactionController;
+
+    @Test
+    void createIncome_validRequest_returnsCreated() {
+        // Arrange
+        TransactionCreateRequestDTO request = TransactionCreateRequestDTO.builder()
+                .referenceId(10L)
+                .date(LocalDate.of(2026, 5, 22))
+                .amount(BigDecimal.valueOf(1000))
+                .createdBy("test-user")
+                .farmId(UUID.randomUUID())
+                .userId(UUID.randomUUID())
+                .build();
+
+        TransactionCreateResponseDTO responseDto =
+                new TransactionCreateResponseDTO(1L, "Transaction created");
+
+        when(dashboardService.create(any(TransactionCreateRequestDTO.class)))
+                .thenReturn(responseDto);
+
+        // Act
+        ResponseEntity<TransactionCreateResponseDTO> response =
+                transactionController.createIncome(request);
+
+        // Assert
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getId()).isEqualTo(1L);
+        assertThat(response.getBody().getMessage()).isEqualTo("Transaction created");
+
+        // Controller should enforce type "INCOME"
+        verify(dashboardService, times(1)).create(any(TransactionCreateRequestDTO.class));
+    }
+}

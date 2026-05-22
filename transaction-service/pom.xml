@@ -15,23 +15,29 @@
   <artifactId>transaction-service</artifactId>
   <version>0.1.0</version>
   <name>transaction-service</name>
-  <description>Transaction Service for FarmStack</description>
+  <description>Transaction Dashboard Service for FarmStack</description>
   <packaging>jar</packaging>
 
   <properties>
     <java.version>21</java.version>
     <jjwt.version>0.12.6</jjwt.version>
     <resilience4j.version>2.2.0</resilience4j.version>
-    <skipTests>true</skipTests>
-    <maven.test.skip>true</maven.test.skip>
+    <skipTests>false</skipTests>
   </properties>
 
   <dependencies>
+    <!-- Spring Boot Starters -->
     <!-- Spring Boot Starters -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -49,7 +55,7 @@
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
 
-    <!-- AOP - Required for Resilience4j annotations -->
+    <!-- AOP - Required for Resilience-4j -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-aop</artifactId>
@@ -60,20 +66,6 @@
       <groupId>io.github.resilience4j</groupId>
       <artifactId>resilience4j-spring-boot3</artifactId>
       <version>${resilience4j.version}</version>
-    </dependency>
-
-    <!-- Optional: Resilience4j Reactor support for WebClient -->
-    <dependency>
-      <groupId>io.github.resilience4j</groupId>
-      <artifactId>resilience4j-reactor</artifactId>
-      <version>${resilience4j.version}</version>
-    </dependency>
-
-    <!-- Database -->
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <scope>runtime</scope>
     </dependency>
 
     <!-- JWT -->

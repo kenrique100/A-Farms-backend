@@ -33,7 +33,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String login(LoginRequest request) {
-        User user = authRepository.findByEmailOrUsername(request.getEmailOrUsername(), request.getEmailOrUsername())
+        User user = authRepository.findByEmailOrUsername(
+                        request.getEmailOrUsername(), request.getEmailOrUsername())
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid credentials"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
@@ -54,7 +55,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public TokenValidationResponse validateToken(String authHeader) {
         String token = userValidation.validateAndExtractToken(authHeader);
-        jwtUtil.validateToken(token);
+        // ← renamed from validateToken() to isTokenValid()
+        if (!jwtUtil.isTokenValid(token)) {
+            throw new com.afarms.user.exception.UnauthorizedException("Invalid or expired token");
+        }
         return responseBuilder.buildTokenValidationResponse(token, jwtUtil);
     }
 
@@ -63,7 +67,6 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponse registerMaster(MasterRegisterRequest request) {
         log.info("Registering master: {}", request.getEmail());
 
-        // Validate
         PasswordValidator.validatePasswordStrength(request.getPassword());
         userValidation.validateEmailNotExists(request.getEmail());
         farmUtils.validateFarmNameUniqueness(request.getFarmName());
@@ -81,12 +84,10 @@ public class AuthServiceImpl implements AuthService {
     public String registerSubUser(SubUserRegisterRequest request) {
         log.info("Registering sub-user: {}", request.getEmail());
 
-        // Validate
         PasswordValidator.validatePasswordStrength(request.getPassword());
         userValidation.validateEmailNotExists(request.getEmail());
         farmUtils.validateFarmExistsWithMaster(request.getFarmId());
 
-        // Create user
         String role = userValidation.normalizeSubUserRole(request.getRole());
         User user = userBuilder.createSubUser(request, passwordEncoder, role);
 

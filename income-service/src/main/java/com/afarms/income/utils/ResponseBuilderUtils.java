@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ResponseBuilderUtils {
-
     public IncomeResponseDTO buildResponse(Income income, String userName) {
+        String displayName = (userName != null && !userName.isBlank()) ? userName : (income.getUserId() != null ? income.getUserId().toString() : "Unknown");
         return IncomeResponseDTO.builder()
                 .id(income.getId())
                 .description(income.getDescription())
@@ -15,7 +15,7 @@ public class ResponseBuilderUtils {
                 .occurredAt(income.getOccurredAt())
                 .farmId(income.getFarmId())
                 .userId(income.getUserId())
-                .userName(userName)
+                .userName(displayName)
                 .transactionId(income.getTransactionId())
                 .createdAt(income.getCreatedAt())
                 .build();

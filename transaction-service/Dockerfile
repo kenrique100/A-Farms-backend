@@ -6,13 +6,14 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-# Skip ALL test processing (compilation + execution)
-RUN mvn clean package -Dmaven.test.skip=true -DskipTests
+# Build with tests disabled (clean build)
+RUN mvn clean package -DskipTests
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
+# Install wget for healthcheck
 RUN apt-get update && \
     apt-get install -y --no-install-recommends wget && \
     rm -rf /var/lib/apt/lists/*

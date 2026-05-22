@@ -1,7 +1,6 @@
 package com.afarms.income.service;
 
 import com.afarms.income.client.TransactionServiceClient;
-import com.afarms.income.client.UserServiceClient;
 import com.afarms.income.repository.IncomeRepository;
 import com.afarms.income.service.impl.IncomeServiceImpl;
 import com.afarms.income.utils.IncomeBuilderUtils;
@@ -20,9 +19,6 @@ class IncomeServiceTest {
 
     @Mock
     private IncomeRepository incomeRepository;
-
-    @Mock
-    private UserServiceClient userServiceClient;
 
     @Mock
     private TransactionServiceClient transactionServiceClient;
