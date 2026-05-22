@@ -9,6 +9,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Component
 public class TransactionServiceClient {
 
@@ -44,25 +47,15 @@ public class TransactionServiceClient {
         }
     }
 
-    private Object buildBody(TransactionCreateRequestDTO incomeTxRequest) {
-        TransactionPayload payload = new TransactionPayload();
-        payload.type = "INCOME";
-        payload.referenceId = incomeTxRequest.getIncomeId();
-        payload.date = incomeTxRequest.getOccurredAt();
-        payload.amount = incomeTxRequest.getAmount();
-        payload.createdBy = incomeTxRequest.getCreatedBy();
-        payload.farmId = incomeTxRequest.getFarmId();
-        payload.userId = incomeTxRequest.getUserId();
-        return payload;
-    }
-
-    private static class TransactionPayload {
-        public String type;
-        public Long referenceId;
-        public java.time.LocalDate date;
-        public java.math.BigDecimal amount;
-        public String createdBy;
-        public java.util.UUID farmId;
-        public java.util.UUID userId;
+    private Map<String, Object> buildBody(TransactionCreateRequestDTO incomeTxRequest) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("type", "INCOME");
+        body.put("referenceId", incomeTxRequest.getIncomeId());
+        body.put("date", incomeTxRequest.getOccurredAt());
+        body.put("amount", incomeTxRequest.getAmount());
+        body.put("createdBy", incomeTxRequest.getCreatedBy());
+        body.put("farmId", incomeTxRequest.getFarmId());
+        body.put("userId", incomeTxRequest.getUserId());
+        return body;
     }
 }
