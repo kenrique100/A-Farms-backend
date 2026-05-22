@@ -46,7 +46,7 @@ public class IncomeServiceImpl implements IncomeService {
         log.info("Income saved with id: {} for farm: {}", saved.getId(), tokenInfo.getFarmId());
 
         try {
-            TransactionCreateRequestDTO incomeTxRequest = builderUtils.buildTransactionRequest(saved);
+            TransactionCreateRequestDTO incomeTxRequest = builderUtils.buildTransactionRequest(saved, tokenInfo);
 
             // Forward JWT to transaction service
             TransactionCreateResponseDTO txResponse =

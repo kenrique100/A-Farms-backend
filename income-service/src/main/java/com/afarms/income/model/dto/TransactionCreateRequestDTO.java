@@ -17,6 +17,7 @@ public class TransactionCreateRequestDTO {
     private Long incomeId;
     private UUID farmId;
     private UUID userId;
+    private String createdBy;
     private String description;
     private BigDecimal amount;
     private LocalDate occurredAt;

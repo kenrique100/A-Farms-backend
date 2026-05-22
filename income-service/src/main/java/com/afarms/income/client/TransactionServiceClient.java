@@ -25,19 +25,10 @@ public class TransactionServiceClient {
     public TransactionCreateResponseDTO createIncomeTransaction(TransactionCreateRequestDTO incomeTxRequest,
                                                                 String authHeader) {
         try {
-            Map<String, Object> body = new HashMap<>();
-            body.put("type", "INCOME");
-            body.put("referenceId", incomeTxRequest.getIncomeId());
-            body.put("date", incomeTxRequest.getOccurredAt());
-            body.put("amount", incomeTxRequest.getAmount());
-            body.put("createdBy", incomeTxRequest.getDescription());
-            body.put("farmId", incomeTxRequest.getFarmId());
-            body.put("userId", incomeTxRequest.getUserId());
-
             TransactionCreateResponseDTO response = restClient.post()
                     .uri("/api/v1/transactions/income")
                     .header("Authorization", authHeader)
-                    .body(body)
+                    .body(buildBody(incomeTxRequest))
                     .retrieve()
                     .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
                         throw new ExternalServiceException("Transaction service rejected request");
@@ -54,5 +45,17 @@ public class TransactionServiceClient {
         } catch (RestClientException ex) {
             throw new ExternalServiceException("Failed to communicate with transaction service", ex);
         }
+    }
+
+    private Map<String, Object> buildBody(TransactionCreateRequestDTO incomeTxRequest) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("type", "INCOME");
+        body.put("referenceId", incomeTxRequest.getIncomeId());
+        body.put("date", incomeTxRequest.getOccurredAt());
+        body.put("amount", incomeTxRequest.getAmount());
+        body.put("createdBy", incomeTxRequest.getCreatedBy());
+        body.put("farmId", incomeTxRequest.getFarmId());
+        body.put("userId", incomeTxRequest.getUserId());
+        return body;
     }
 }

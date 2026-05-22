@@ -25,11 +25,12 @@ public class IncomeBuilderUtils {
         income.setOccurredAt(request.getOccurredAt());
     }
 
-    public TransactionCreateRequestDTO buildTransactionRequest(Income income) {
+    public TransactionCreateRequestDTO buildTransactionRequest(Income income, TokenValidationResponse tokenInfo) {
         return TransactionCreateRequestDTO.builder()
                 .incomeId(income.getId())
                 .farmId(income.getFarmId())
                 .userId(income.getUserId())
+                .createdBy(tokenInfo.getUsername())
                 .description(income.getDescription())
                 .amount(income.getAmount())
                 .occurredAt(income.getOccurredAt())
