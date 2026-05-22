@@ -9,9 +9,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Component
 public class TransactionServiceClient {
 
@@ -25,19 +22,10 @@ public class TransactionServiceClient {
     public TransactionCreateResponseDTO createIncomeTransaction(TransactionCreateRequestDTO incomeTxRequest,
                                                                 String authHeader) {
         try {
-            Map<String, Object> body = new HashMap<>();
-            body.put("type", "INCOME");
-            body.put("referenceId", incomeTxRequest.getIncomeId());
-            body.put("date", incomeTxRequest.getOccurredAt());
-            body.put("amount", incomeTxRequest.getAmount());
-            body.put("createdBy", incomeTxRequest.getDescription());
-            body.put("farmId", incomeTxRequest.getFarmId());
-            body.put("userId", incomeTxRequest.getUserId());
-
             TransactionCreateResponseDTO response = restClient.post()
                     .uri("/api/v1/transactions/income")
                     .header("Authorization", authHeader)
-                    .body(body)
+                    .body(buildBody(incomeTxRequest))
                     .retrieve()
                     .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
                         throw new ExternalServiceException("Transaction service rejected request");
@@ -54,5 +42,27 @@ public class TransactionServiceClient {
         } catch (RestClientException ex) {
             throw new ExternalServiceException("Failed to communicate with transaction service", ex);
         }
+    }
+
+    private Object buildBody(TransactionCreateRequestDTO incomeTxRequest) {
+        TransactionPayload payload = new TransactionPayload();
+        payload.type = "INCOME";
+        payload.referenceId = incomeTxRequest.getIncomeId();
+        payload.date = incomeTxRequest.getOccurredAt();
+        payload.amount = incomeTxRequest.getAmount();
+        payload.createdBy = incomeTxRequest.getCreatedBy();
+        payload.farmId = incomeTxRequest.getFarmId();
+        payload.userId = incomeTxRequest.getUserId();
+        return payload;
+    }
+
+    private static class TransactionPayload {
+        public String type;
+        public Long referenceId;
+        public java.time.LocalDate date;
+        public java.math.BigDecimal amount;
+        public String createdBy;
+        public java.util.UUID farmId;
+        public java.util.UUID userId;
     }
 }
