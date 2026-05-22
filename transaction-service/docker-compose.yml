@@ -7,9 +7,10 @@ services:
     ports:
       - "8084:8084"
     environment:
-      SERVER_PORT: 8084
+      SERVER_PORT: ${SERVER_PORT}
       JWT_SECRET: ${JWT_SECRET}
       INCOME_SERVICE_URL: ${INCOME_SERVICE_URL}
+      USER_SERVICE_URL: ${USER_SERVICE_URL}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       RESILIENCE4J_LOG_LEVEL: ${RESILIENCE4J_LOG_LEVEL}
       REST_TEMPLATE_LOG_LEVEL: ${REST_TEMPLATE_LOG_LEVEL}
@@ -28,7 +29,7 @@ services:
       - dev-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8084/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 5

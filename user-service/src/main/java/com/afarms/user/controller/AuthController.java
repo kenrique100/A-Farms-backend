@@ -78,7 +78,10 @@ public class AuthController {
     public ResponseEntity<List<UserListResponse>> getFarmUsers(
             @RequestHeader("Authorization") String authHeader) {
         TokenValidationResponse tokenInfo = authService.validateToken(authHeader);
-        if (!"MASTER".equals(tokenInfo.getRole())) {
+        // Allow MASTER, ADMIN, and SUB_USER to view farm users
+        if (!"MASTER".equals(tokenInfo.getRole()) &&
+                !"ADMIN".equals(tokenInfo.getRole()) &&
+                !"SUB_USER".equals(tokenInfo.getRole())) {
             return ResponseEntity.status(403).build();
         }
         return ResponseEntity.ok(authService.getUsersByFarmId(tokenInfo.getFarmId()));

@@ -123,6 +123,7 @@ public class ResponseBuilderUtils {
                 .map(u -> new UserListResponse(
                         u.getId(),
                         u.getEmail(),
+                        u.getUsername(),
                         u.getRole(),
                         u.getFarmId()
                 ))

@@ -18,8 +18,8 @@ services:
       SPRING_JPA_SHOW_SQL: ${SPRING_JPA_SHOW_SQL}
       LOGGING_LEVEL_COM_FARMSTACK_INCOME: ${LOG_LEVEL}
       TRANSACTION_SERVICE_URL: ${TRANSACTION_SERVICE_URL}
-      USER_SERVICE_URL: ${USER_SERVICE_URL}
       TRANSACTION_SERVICE_API_KEY: ${TRANSACTION_SERVICE_API_KEY}
+      USER_SERVICE_URL: ${USER_SERVICE_URL}
     env_file:
       - .env
     depends_on:
@@ -29,10 +29,10 @@ services:
       - dev-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8081/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
       interval: 30s
-      timeout: 3s
-      retries: 3
+      timeout: 10s
+      retries: 5
       start_period: 10s
 
   income-service-db:

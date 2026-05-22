@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -56,7 +57,9 @@ public class IncomeServiceImpl implements IncomeService {
             Income updated = incomeRepository.save(saved);
             log.info("Transaction linked: {} for income {}", txResponse.getId(), updated.getId());
 
-            return serviceUtils.toResponseDTOWithFetch(updated, tokenInfo);
+            // For single response we can build map only for this user
+            Map<UUID, String> singleUserMap = Map.of(tokenInfo.getUserId(), tokenInfo.getUsername());
+            return serviceUtils.toResponseDTOWithFetch(updated, tokenInfo, singleUserMap);
 
         } catch (ExternalServiceException e) {
             log.error("Failed to create transaction for income {}: {}", saved.getId(), e.getMessage());
@@ -74,22 +77,31 @@ public class IncomeServiceImpl implements IncomeService {
         log.debug("Entering findAll with authHeader present: {}", authHeader != null);
         TokenValidationResponse tokenInfo = serviceUtils.validateAndGetTokenInfo(authHeader);
         log.debug("Token validated, farmId: {}", tokenInfo.getFarmId());
+
         Page<Income> incomes = incomeRepository.findByFarmId(tokenInfo.getFarmId(), pageable);
-        return serviceUtils.toResponseDTOPage(incomes, tokenInfo);
+        Map<UUID, String> usernameMap = serviceUtils.getUsernameMapForFarm(authHeader, tokenInfo.getFarmId());
+
+        return serviceUtils.toResponseDTOPage(incomes, tokenInfo, usernameMap);
     }
 
     @Override
     public List<IncomeResponseDTO> findAllList(String authHeader) {
         TokenValidationResponse tokenInfo = serviceUtils.validateAndGetTokenInfo(authHeader);
+
         List<Income> incomes = incomeRepository.findByFarmId(tokenInfo.getFarmId());
-        return serviceUtils.toResponseDTOList(incomes, tokenInfo);
+        Map<UUID, String> usernameMap = serviceUtils.getUsernameMapForFarm(authHeader, tokenInfo.getFarmId());
+
+        return serviceUtils.toResponseDTOList(incomes, tokenInfo, usernameMap);
     }
 
     @Override
     public IncomeResponseDTO findById(String authHeader, Long id) {
         TokenValidationResponse tokenInfo = serviceUtils.validateAndGetTokenInfo(authHeader);
+
         Income income = serviceUtils.findIncomeByIdAndFarmId(id, tokenInfo.getFarmId());
-        return serviceUtils.toResponseDTOWithFetch(income, tokenInfo);
+        Map<UUID, String> usernameMap = serviceUtils.getUsernameMapForFarm(authHeader, tokenInfo.getFarmId());
+
+        return serviceUtils.toResponseDTOWithFetch(income, tokenInfo, usernameMap);
     }
 
     @Override
@@ -97,21 +109,27 @@ public class IncomeServiceImpl implements IncomeService {
     public IncomeResponseDTO update(String authHeader, Long id, IncomeRequestDTO request) {
         validationUtils.validateCreateRequest(request);
         TokenValidationResponse tokenInfo = serviceUtils.validateAndGetTokenInfoWithWriteAccess(authHeader);
+
         Income existing = serviceUtils.findIncomeByIdAndFarmId(id, tokenInfo.getFarmId());
         serviceUtils.checkOwnershipOrMaster(existing, tokenInfo.getUserId(), tokenInfo.getRole());
 
         builderUtils.updateIncomeFromRequest(existing, request);
         Income updated = incomeRepository.save(existing);
         log.info("Income updated: {}", id);
-        return serviceUtils.toResponseDTOWithFetch(updated, tokenInfo);
+
+        Map<UUID, String> usernameMap = serviceUtils.getUsernameMapForFarm(authHeader, tokenInfo.getFarmId());
+
+        return serviceUtils.toResponseDTOWithFetch(updated, tokenInfo, usernameMap);
     }
 
     @Override
     @Transactional
     public void delete(String authHeader, Long id) {
         TokenValidationResponse tokenInfo = serviceUtils.validateAndGetTokenInfo(authHeader);
+
         Income income = serviceUtils.findIncomeByIdAndFarmId(id, tokenInfo.getFarmId());
         serviceUtils.checkOwnershipOrMaster(income, tokenInfo.getUserId(), tokenInfo.getRole());
+
         incomeRepository.delete(income);
         log.info("Income deleted: {}", id);
     }
@@ -120,18 +138,29 @@ public class IncomeServiceImpl implements IncomeService {
     public Page<IncomeResponseDTO> findByFarmId(String authHeader, UUID farmId, Pageable pageable) {
         TokenValidationResponse tokenInfo = serviceUtils.validateAndGetTokenInfo(authHeader);
         serviceUtils.checkFarmAccess(farmId, tokenInfo.getFarmId(), tokenInfo.getRole());
+
         Page<Income> incomes = incomeRepository.findByFarmId(farmId, pageable);
-        return serviceUtils.toResponseDTOPage(incomes, tokenInfo);
+        Map<UUID, String> usernameMap = serviceUtils.getUsernameMapForFarm(authHeader, farmId);
+
+        return serviceUtils.toResponseDTOPage(incomes, tokenInfo, usernameMap);
     }
 
     @Override
     public Page<IncomeResponseDTO> findByDateRange(String authHeader, LocalDate start, LocalDate end, Pageable pageable) {
+        if (start == null || end == null) {
+            throw new BusinessException("Start date and end date are required parameters");
+        }
+
         if (start.isAfter(end)) {
             throw new BusinessException("Start date cannot be after end date");
         }
+
         TokenValidationResponse tokenInfo = serviceUtils.validateAndGetTokenInfo(authHeader);
+
         Page<Income> incomes =
                 incomeRepository.findByFarmIdAndOccurredAtBetween(tokenInfo.getFarmId(), start, end, pageable);
-        return serviceUtils.toResponseDTOPage(incomes, tokenInfo);
+        Map<UUID, String> usernameMap = serviceUtils.getUsernameMapForFarm(authHeader, tokenInfo.getFarmId());
+
+        return serviceUtils.toResponseDTOPage(incomes, tokenInfo, usernameMap);
     }
 }

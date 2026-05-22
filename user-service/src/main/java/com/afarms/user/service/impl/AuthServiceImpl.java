@@ -55,7 +55,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public TokenValidationResponse validateToken(String authHeader) {
         String token = userValidation.validateAndExtractToken(authHeader);
-        // ← renamed from validateToken() to isTokenValid()
         if (!jwtUtil.isTokenValid(token)) {
             throw new com.afarms.user.exception.UnauthorizedException("Invalid or expired token");
         }

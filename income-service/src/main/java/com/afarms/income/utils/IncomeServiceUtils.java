@@ -1,7 +1,9 @@
 package com.afarms.income.utils;
 
+import com.afarms.income.client.UserServiceClient;
 import com.afarms.income.exception.AccessDeniedException;
 import com.afarms.income.exception.ResourceNotFoundException;
+import com.afarms.income.model.dto.FarmUserDTO;
 import com.afarms.income.model.dto.IncomeResponseDTO;
 import com.afarms.income.model.dto.TokenValidationResponse;
 import com.afarms.income.model.entity.Income;
@@ -13,8 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -25,26 +30,21 @@ public class IncomeServiceUtils {
     private final IncomeValidationUtils validationUtils;
     private final ResponseBuilderUtils responseBuilder;
     private final IncomeRepository incomeRepository;
+    private final UserServiceClient userServiceClient;
 
     public TokenValidationResponse validateAndGetTokenInfo(String authHeader) {
         validationUtils.validateAuthorizationHeader(authHeader);
-
         String token = authHeader.substring(7);
-
         if (!jwtUtil.validateToken(token)) {
-            log.warn("JWT token failed local validation");
             throw new AccessDeniedException("Invalid or expired token");
         }
-
         Claims claims = jwtUtil.extractClaims(token);
-
         String userIdStr = claims.get("userId", String.class);
         String farmIdStr = claims.get("farmId", String.class);
         String role = claims.get("role", String.class);
         String username = claims.getSubject();
 
         if (userIdStr == null || farmIdStr == null) {
-            log.warn("Token missing userId or farmId claims");
             throw new AccessDeniedException("Invalid token payload");
         }
 
@@ -56,7 +56,6 @@ public class IncomeServiceUtils {
                 role,
                 UUID.fromString(farmIdStr)
         );
-
         validationUtils.validateTokenPayload(tokenInfo);
         return tokenInfo;
     }
@@ -67,40 +66,103 @@ public class IncomeServiceUtils {
         return tokenInfo;
     }
 
-    public IncomeResponseDTO toResponseDTOWithFetch(Income income, TokenValidationResponse tokenInfo) {
-        return responseBuilder.buildResponse(income, tokenInfo.getUsername());
+    /**
+     * Builds a map of userId → username for all users of the given farm.
+     * Uses UserServiceClient with fallback strategy.
+     */
+    public Map<UUID, String> getUsernameMapForFarm(String authHeader, UUID farmId) {
+        Map<UUID, String> map = new HashMap<>();
+
+        try {
+            List<FarmUserDTO> farmUsers = userServiceClient.getFarmUsers(authHeader, farmId);
+            if (farmUsers != null && !farmUsers.isEmpty()) {
+                for (FarmUserDTO user : farmUsers) {
+                    if (user.getId() != null) {
+                        // Prefer username, fallback to email
+                        String displayName = user.getUsername() != null && !user.getUsername().isBlank()
+                                ? user.getUsername()
+                                : (user.getEmail() != null ? user.getEmail() : user.getId().toString());
+                        map.put(user.getId(), displayName);
+                    }
+                }
+                log.debug("Resolved {} usernames for farm {}", map.size(), farmId);
+            } else {
+                log.warn("No farm users returned from user service for farm {}", farmId);
+            }
+        } catch (Exception e) {
+            log.error("Failed to resolve usernames for farm {}: {}", farmId, e.getMessage());
+        }
+
+        return map;
     }
 
-    public IncomeResponseDTO toResponseDTOWithUsername(Income income, String username) {
+    /**
+     * Resolve username for a single user with multiple fallback strategies
+     */
+    private String resolveUsername(String authHeader, UUID userId,
+                                   TokenValidationResponse tokenInfo,
+                                   Map<UUID, String> usernameMap) {
+        // Strategy 1: Check if it's the current user
+        if (userId.equals(tokenInfo.getUserId())) {
+            return tokenInfo.getUsername();
+        }
+
+        // Strategy 2: Check the provided map
+        if (usernameMap != null && usernameMap.containsKey(userId)) {
+            String username = usernameMap.get(userId);
+            if (username != null && !username.isBlank() && !username.equals(userId.toString())) {
+                return username;
+            }
+        }
+
+        // Strategy 3: Try direct fetch from user service
+        try {
+            FarmUserDTO user = userServiceClient.getUserById(authHeader, userId);
+            if (user != null) {
+                String displayName = user.getUsername() != null && !user.getUsername().isBlank()
+                        ? user.getUsername()
+                        : (user.getEmail() != null ? user.getEmail() : null);
+                if (displayName != null && !displayName.isBlank()) {
+                    log.debug("Direct fetch resolved username '{}' for user {}", displayName, userId);
+                    return displayName;
+                }
+            }
+        } catch (Exception e) {
+            log.debug("Direct fetch failed for user {}: {}", userId, e.getMessage());
+        }
+
+        // Strategy 4: Fallback to showing "User" + short ID
+        String shortId = userId.toString().substring(0, Math.min(8, userId.toString().length()));
+        log.debug("Using fallback username for user {}: User-{}", userId, shortId);
+        return "User-" + shortId;
+    }
+
+    public IncomeResponseDTO toResponseDTOWithFetch(Income income, TokenValidationResponse tokenInfo,
+                                                    Map<UUID, String> usernameMap) {
+        String username = resolveUsername(null, income.getUserId(), tokenInfo, usernameMap);
         return responseBuilder.buildResponse(income, username);
     }
 
-    public List<IncomeResponseDTO> toResponseDTOList(List<Income> incomes, TokenValidationResponse currentTokenInfo) {
-        // All incomes on the same farm use the current token's username for own records,
-        // fallback to userId string for records created by other farm members
-        return incomes.stream()
-                .map(income -> {
-                    String username;
-                    if (income.getUserId() != null
-                            && income.getUserId().equals(currentTokenInfo.getUserId())) {
-                        username = currentTokenInfo.getUsername();
-                    } else {
-                        // No HTTP call — use userId as display fallback for other farm members
-                        username = income.getUserId() != null
-                                ? income.getUserId().toString()
-                                : "Unknown";
-                    }
-                    return toResponseDTOWithUsername(income, username);
-                })
-                .toList();
+    // Overloaded method for when authHeader is available
+    public IncomeResponseDTO toResponseDTOWithFetch(String authHeader, Income income,
+                                                    TokenValidationResponse tokenInfo,
+                                                    Map<UUID, String> usernameMap) {
+        String username = resolveUsername(authHeader, income.getUserId(), tokenInfo, usernameMap);
+        return responseBuilder.buildResponse(income, username);
     }
 
-    public Page<IncomeResponseDTO> toResponseDTOPage(Page<Income> incomes, TokenValidationResponse currentTokenInfo) {
-        List<IncomeResponseDTO> list = toResponseDTOList(incomes.getContent(), currentTokenInfo);
-        return incomes.map(income -> {
-            int index = incomes.getContent().indexOf(income);
-            return list.get(index);
-        });
+    public List<IncomeResponseDTO> toResponseDTOList(List<Income> incomes,
+                                                     TokenValidationResponse currentTokenInfo,
+                                                     Map<UUID, String> usernameMap) {
+        return incomes.stream()
+                .map(income -> toResponseDTOWithFetch(null, income, currentTokenInfo, usernameMap))
+                .collect(Collectors.toList());
+    }
+
+    public Page<IncomeResponseDTO> toResponseDTOPage(Page<Income> incomes,
+                                                     TokenValidationResponse currentTokenInfo,
+                                                     Map<UUID, String> usernameMap) {
+        return incomes.map(income -> toResponseDTOWithFetch(null, income, currentTokenInfo, usernameMap));
     }
 
     public void checkOwnershipOrMaster(Income income, UUID userId, String role) {
