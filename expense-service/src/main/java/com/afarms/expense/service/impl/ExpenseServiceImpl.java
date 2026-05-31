@@ -56,7 +56,6 @@ public class ExpenseServiceImpl implements ExpenseService {
             saved.setTransactionId(tx.getId());
             return ExpenseMapper.toResponse(expenseRepository.save(saved));
         } catch (Exception ex) {
-            expenseRepository.delete(saved);
             throw new BusinessException("Unable to create linked transaction: " + ex.getMessage(), ex);
         }
     }

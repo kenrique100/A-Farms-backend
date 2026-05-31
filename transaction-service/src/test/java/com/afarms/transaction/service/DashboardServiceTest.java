@@ -32,7 +32,6 @@ class DashboardServiceTest {
         UUID farmId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         TransactionCreateRequestDTO request = TransactionCreateRequestDTO.builder()
-                .type("INCOME")
                 .referenceId(10L)
                 .date(LocalDate.of(2026, 5, 22))
                 .amount(BigDecimal.valueOf(1000))

@@ -36,7 +36,6 @@ class TransactionControllerTest {
                 .createdBy("test-user")
                 .farmId(UUID.randomUUID())
                 .userId(UUID.randomUUID())
-                .type("INCOME")
                 .build();
 
         TransactionCreateResponseDTO responseDto = new TransactionCreateResponseDTO(1L, "Transaction created");

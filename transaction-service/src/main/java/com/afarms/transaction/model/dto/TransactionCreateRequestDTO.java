@@ -1,6 +1,5 @@
 package com.afarms.transaction.model.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
@@ -16,8 +15,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransactionCreateRequestDTO {
-    @NotBlank
-    private String type;
     @NotNull
     private Long referenceId;
     @NotNull

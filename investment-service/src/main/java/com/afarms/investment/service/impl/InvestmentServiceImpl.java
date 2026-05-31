@@ -56,7 +56,6 @@ public class InvestmentServiceImpl implements InvestmentService {
             saved.setTransactionId(tx.getId());
             return InvestmentMapper.toResponse(investmentRepository.save(saved));
         } catch (Exception ex) {
-            investmentRepository.delete(saved);
             throw new BusinessException("Unable to create linked transaction: " + ex.getMessage(), ex);
         }
     }

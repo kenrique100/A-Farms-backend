@@ -55,7 +55,7 @@ class TransactionControllerIntegrationTest {
         mockMvc.perform(post("/api/v1/transactions/expense")
                         .header("Authorization", authHeader)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"type\":\"EXPENSE\",\"referenceId\":1,\"date\":\"2026-05-20\",\"amount\":100.0,\"farmId\":\"11111111-1111-1111-1111-111111111111\",\"userId\":\"22222222-2222-2222-2222-222222222222\"}"))
+                        .content("{\"referenceId\":1,\"date\":\"2026-05-20\",\"amount\":100.0,\"farmId\":\"11111111-1111-1111-1111-111111111111\",\"userId\":\"22222222-2222-2222-2222-222222222222\"}"))
                 .andExpect(status().isCreated());
     }
 }
