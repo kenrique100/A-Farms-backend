@@ -11,10 +11,14 @@ public final class ExpenseMapper {
 
     public static Expense toEntity(ExpenseRequestDTO request) {
         Expense entity = new Expense();
+        updateEntity(entity, request);
+        return entity;
+    }
+
+    public static void updateEntity(Expense entity, ExpenseRequestDTO request) {
         entity.setDescription(request.getDescription());
         entity.setAmount(request.getAmount());
         entity.setOccurredAt(request.getOccurredAt());
-        return entity;
     }
 
     public static ExpenseResponseDTO toResponse(Expense entity) {
@@ -23,6 +27,9 @@ public final class ExpenseMapper {
         response.setDescription(entity.getDescription());
         response.setAmount(entity.getAmount());
         response.setOccurredAt(entity.getOccurredAt());
+        response.setFarmId(entity.getFarmId());
+        response.setUserId(entity.getUserId());
+        response.setTransactionId(entity.getTransactionId());
         return response;
     }
 }

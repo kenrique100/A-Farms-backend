@@ -92,6 +92,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 "/swagger-resources",
                 "/webjars",
                 "/actuator/health",
+                "/actuator/health/",
+                "/actuator/health/readiness",
+                "/actuator/health/liveness",
                 "/actuator/info"
         };
         for (String path : publicPaths) {

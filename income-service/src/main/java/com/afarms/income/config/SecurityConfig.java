@@ -18,7 +18,7 @@ public class SecurityConfig {
 
     public static final String[] PUBLIC_ENDPOINTS = {
             "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs",
-            "/swagger-resources/**", "/webjars/**", "/actuator/health", "/actuator/info"
+            "/swagger-resources/**", "/webjars/**", "/actuator/health", "/actuator/health/**", "/actuator/info"
     };
 
     private final JwtAuthFilter jwtAuthFilter;

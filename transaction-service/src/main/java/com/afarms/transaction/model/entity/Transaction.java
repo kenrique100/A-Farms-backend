@@ -1,19 +1,30 @@
 package com.afarms.transaction.model.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 @Entity
-@Table(name = "transactions")
+@Table(name = "transactions", indexes = {
+        @Index(name = "idx_transactions_farm_id", columnList = "farm_id"),
+        @Index(name = "idx_transactions_user_id", columnList = "user_id"),
+        @Index(name = "idx_transactions_transaction_date", columnList = "transaction_date"),
+        @Index(name = "idx_transactions_farm_date", columnList = "farm_id,transaction_date"),
+        @Index(name = "idx_transactions_type", columnList = "type")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,7 +35,6 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // INCOME / EXPENSE / INVESTMENT
     @Column(nullable = false)
     private String type;
 
@@ -45,6 +55,9 @@ public class Transaction {
 
     @Column(name = "user_id")
     private UUID userId;
+
+    @Column(name = "idempotency_key", length = 255)
+    private String idempotencyKey;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

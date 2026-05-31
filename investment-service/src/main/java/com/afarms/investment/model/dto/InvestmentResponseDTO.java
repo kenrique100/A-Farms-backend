@@ -2,6 +2,7 @@ package com.afarms.investment.model.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 public class InvestmentResponseDTO {
 
@@ -9,6 +10,9 @@ public class InvestmentResponseDTO {
     private String description;
     private BigDecimal amount;
     private LocalDate occurredAt;
+    private UUID farmId;
+    private UUID userId;
+    private Long transactionId;
 
     public Long getId() {
         return id;
@@ -40,5 +44,29 @@ public class InvestmentResponseDTO {
 
     public void setOccurredAt(LocalDate occurredAt) {
         this.occurredAt = occurredAt;
+    }
+
+    public UUID getFarmId() {
+        return farmId;
+    }
+
+    public void setFarmId(UUID farmId) {
+        this.farmId = farmId;
+    }
+
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public void setUserId(UUID userId) {
+        this.userId = userId;
+    }
+
+    public Long getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(Long transactionId) {
+        this.transactionId = transactionId;
     }
 }
