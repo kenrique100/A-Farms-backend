@@ -10,7 +10,6 @@
   <name>A-Farms Backend Scaffold</name>
 
   <modules>
-    <module>platform-bom</module>
     <module>income-service</module>
     <module>expense-service</module>
     <module>investment-service</module>

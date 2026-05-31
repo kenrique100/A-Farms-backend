@@ -3,6 +3,7 @@ package com.afarms.transaction.model.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -15,5 +16,4 @@ public class IncomeTransactionDTO {
     private BigDecimal amount;
     private LocalDate occurredAt;
     private String userName;
-    private Long transactionId;
 }

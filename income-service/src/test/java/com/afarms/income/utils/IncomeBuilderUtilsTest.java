@@ -1,7 +1,7 @@
 package com.afarms.income.utils;
 
+import com.afarms.income.model.dto.IncomeRequestDTO;
 import com.afarms.income.model.dto.TokenValidationResponse;
-import com.afarms.income.model.dto.TransactionCreateRequestDTO;
 import com.afarms.income.model.entity.Income;
 import org.junit.jupiter.api.Test;
 
@@ -9,40 +9,62 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class IncomeBuilderUtilsTest {
 
     private final IncomeBuilderUtils incomeBuilderUtils = new IncomeBuilderUtils();
 
     @Test
-    void buildTransactionRequest_shouldUseTokenUsernameAsCreatedBy() {
+    void buildIncomeFromRequest_shouldMapAllFieldsFromRequestAndToken() {
         UUID farmId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
 
-        Income income = Income.builder()
-                .id(10L)
-                .description("Corn sales")
-                .amount(new BigDecimal("250.00"))
-                .occurredAt(LocalDate.of(2026, 5, 21))
-                .farmId(farmId)
-                .userId(userId)
-                .build();
+        IncomeRequestDTO request = new IncomeRequestDTO(
+                "Corn sales",
+                new BigDecimal("250.00"),
+                LocalDate.of(2026, 5, 21)
+        );
 
         TokenValidationResponse tokenInfo = new TokenValidationResponse(
                 userId,
-                "farmer@example.com",
+                "farmer_john",
                 "farmer@example.com",
                 true,
                 "MASTER",
                 farmId
         );
 
-        TransactionCreateRequestDTO request = incomeBuilderUtils.buildTransactionRequest(income, tokenInfo);
+        Income income = incomeBuilderUtils.buildIncomeFromRequest(request, tokenInfo);
 
-        assertEquals(10L, request.getIncomeId());
-        assertEquals("farmer@example.com", request.getCreatedBy());
-        assertEquals(new BigDecimal("250.00"), request.getAmount());
-        assertEquals(LocalDate.of(2026, 5, 21), request.getOccurredAt());
+        assertNotNull(income);
+        assertEquals("Corn sales", income.getDescription());
+        assertEquals(new BigDecimal("250.00"), income.getAmount());
+        assertEquals(LocalDate.of(2026, 5, 21), income.getOccurredAt());
+        assertEquals(farmId, income.getFarmId());
+        assertEquals(userId, income.getUserId());
+    }
+
+    @Test
+    void updateIncomeFromRequest_shouldOverwriteDescriptionAmountAndDate() {
+        Income existing = Income.builder()
+                .id(1L)
+                .description("Old description")
+                .amount(new BigDecimal("100.00"))
+                .occurredAt(LocalDate.of(2026, 1, 1))
+                .build();
+
+        IncomeRequestDTO update = new IncomeRequestDTO(
+                "Updated description",
+                new BigDecimal("999.99"),
+                LocalDate.of(2026, 5, 21)
+        );
+
+        incomeBuilderUtils.updateIncomeFromRequest(existing, update);
+
+        assertEquals("Updated description", existing.getDescription());
+        assertEquals(new BigDecimal("999.99"), existing.getAmount());
+        assertEquals(LocalDate.of(2026, 5, 21), existing.getOccurredAt());
+        assertEquals(1L, existing.getId()); // id must not change
     }
 }

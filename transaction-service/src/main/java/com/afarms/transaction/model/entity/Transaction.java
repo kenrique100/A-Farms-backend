@@ -1,10 +1,7 @@
 package com.afarms.transaction.model.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
@@ -24,7 +21,6 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // INCOME / EXPENSE / INVESTMENT
     @Column(nullable = false)
     private String type;
 
@@ -36,6 +32,9 @@ public class Transaction {
 
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
+
+    @Column(name = "description")
+    private String description;
 
     @Column(name = "created_by")
     private String createdBy;

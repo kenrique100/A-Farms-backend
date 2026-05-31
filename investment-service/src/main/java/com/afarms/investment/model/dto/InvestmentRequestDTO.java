@@ -1,44 +1,25 @@
 package com.afarms.investment.model.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class InvestmentRequestDTO {
 
-    @NotBlank
-    private String description;
+    @NotNull(message = "Initial amount is required")
+    @DecimalMin(value = "1.00", message = "Initial amount must be at least 1.00")
+    private BigDecimal initialAmount;
 
-    @NotNull
-    @Positive
-    private BigDecimal amount;
-
-    @NotNull
-    private LocalDate occurredAt;
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
-    public LocalDate getOccurredAt() {
-        return occurredAt;
-    }
-
-    public void setOccurredAt(LocalDate occurredAt) {
-        this.occurredAt = occurredAt;
-    }
+    @NotNull(message = "Current balance is required")
+    @DecimalMin(value = "0.00", message = "Current balance cannot be negative")
+    private BigDecimal currentBalance;
 }

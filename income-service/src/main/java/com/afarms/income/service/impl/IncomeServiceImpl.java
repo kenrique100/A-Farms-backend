@@ -1,8 +1,6 @@
 package com.afarms.income.service.impl;
 
-import com.afarms.income.client.TransactionServiceClient;
 import com.afarms.income.exception.BusinessException;
-import com.afarms.income.exception.ExternalServiceException;
 import com.afarms.income.model.dto.*;
 import com.afarms.income.model.entity.Income;
 import com.afarms.income.repository.IncomeRepository;
@@ -28,7 +26,6 @@ import java.util.UUID;
 public class IncomeServiceImpl implements IncomeService {
 
     private final IncomeRepository incomeRepository;
-    private final TransactionServiceClient transactionServiceClient;
     private final IncomeBuilderUtils builderUtils;
     private final IncomeValidationUtils validationUtils;
     private final IncomeServiceUtils serviceUtils;
@@ -36,131 +33,97 @@ public class IncomeServiceImpl implements IncomeService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public IncomeResponseDTO create(String authHeader, IncomeRequestDTO request) {
-        log.debug("Creating income for farm");
         validationUtils.validateCreateRequest(request);
-
         TokenValidationResponse tokenInfo =
                 serviceUtils.validateAndGetTokenInfoWithWriteAccess(authHeader);
 
         Income income = builderUtils.buildIncomeFromRequest(request, tokenInfo);
         Income saved = incomeRepository.save(income);
-        log.info("Income saved with id: {} for farm: {}", saved.getId(), tokenInfo.getFarmId());
+        log.info("Income saved: id={} farm={}", saved.getId(), tokenInfo.getFarmId());
 
-        try {
-            TransactionCreateRequestDTO incomeTxRequest = builderUtils.buildTransactionRequest(saved, tokenInfo);
-
-            // Forward JWT to transaction service
-            TransactionCreateResponseDTO txResponse =
-                    transactionServiceClient.createIncomeTransaction(incomeTxRequest, authHeader);
-
-            saved.setTransactionId(txResponse.getId());
-            Income updated = incomeRepository.save(saved);
-            log.info("Transaction linked: {} for income {}", txResponse.getId(), updated.getId());
-
-            // For single response we can build map only for this user
-            Map<UUID, String> singleUserMap = Map.of(tokenInfo.getUserId(), tokenInfo.getUsername());
-            return serviceUtils.toResponseDTOWithFetch(updated, tokenInfo, singleUserMap);
-
-        } catch (ExternalServiceException e) {
-            log.error("Failed to create transaction for income {}: {}", saved.getId(), e.getMessage());
-            incomeRepository.delete(saved);
-            throw new BusinessException("Unable to create linked transaction: " + e.getMessage(), e);
-        } catch (Exception e) {
-            log.error("Unexpected error creating transaction for income {}: {}", saved.getId(), e.getMessage(), e);
-            incomeRepository.delete(saved);
-            throw new BusinessException("Unexpected error creating transaction: " + e.getMessage(), e);
-        }
+        Map<UUID, String> userMap = Map.of(tokenInfo.getUserId(), tokenInfo.getUsername());
+        return serviceUtils.toResponseDTOWithFetch(authHeader, saved, tokenInfo, userMap);
     }
 
     @Override
     public Page<IncomeResponseDTO> findAll(String authHeader, Pageable pageable) {
-        log.debug("Entering findAll with authHeader present: {}", authHeader != null);
         TokenValidationResponse tokenInfo = serviceUtils.validateAndGetTokenInfo(authHeader);
-        log.debug("Token validated, farmId: {}", tokenInfo.getFarmId());
-
         Page<Income> incomes = incomeRepository.findByFarmId(tokenInfo.getFarmId(), pageable);
-        Map<UUID, String> usernameMap = serviceUtils.getUsernameMapForFarm(authHeader, tokenInfo.getFarmId());
-
-        return serviceUtils.toResponseDTOPage(incomes, tokenInfo, usernameMap);
+        Map<UUID, String> usernameMap =
+                serviceUtils.getUsernameMapForFarm(authHeader, tokenInfo.getFarmId());
+        return serviceUtils.toResponseDTOPage(authHeader, incomes, tokenInfo, usernameMap);
     }
 
     @Override
     public List<IncomeResponseDTO> findAllList(String authHeader) {
         TokenValidationResponse tokenInfo = serviceUtils.validateAndGetTokenInfo(authHeader);
-
         List<Income> incomes = incomeRepository.findByFarmId(tokenInfo.getFarmId());
-        Map<UUID, String> usernameMap = serviceUtils.getUsernameMapForFarm(authHeader, tokenInfo.getFarmId());
-
-        return serviceUtils.toResponseDTOList(incomes, tokenInfo, usernameMap);
+        Map<UUID, String> usernameMap =
+                serviceUtils.getUsernameMapForFarm(authHeader, tokenInfo.getFarmId());
+        return serviceUtils.toResponseDTOList(authHeader, incomes, tokenInfo, usernameMap);
     }
 
     @Override
     public IncomeResponseDTO findById(String authHeader, Long id) {
         TokenValidationResponse tokenInfo = serviceUtils.validateAndGetTokenInfo(authHeader);
-
         Income income = serviceUtils.findIncomeByIdAndFarmId(id, tokenInfo.getFarmId());
-        Map<UUID, String> usernameMap = serviceUtils.getUsernameMapForFarm(authHeader, tokenInfo.getFarmId());
-
-        return serviceUtils.toResponseDTOWithFetch(income, tokenInfo, usernameMap);
+        Map<UUID, String> usernameMap =
+                serviceUtils.getUsernameMapForFarm(authHeader, tokenInfo.getFarmId());
+        return serviceUtils.toResponseDTOWithFetch(authHeader, income, tokenInfo, usernameMap);
     }
 
     @Override
     @Transactional
     public IncomeResponseDTO update(String authHeader, Long id, IncomeRequestDTO request) {
         validationUtils.validateCreateRequest(request);
-        TokenValidationResponse tokenInfo = serviceUtils.validateAndGetTokenInfoWithWriteAccess(authHeader);
+        TokenValidationResponse tokenInfo =
+                serviceUtils.validateAndGetTokenInfoWithWriteAccess(authHeader);
 
         Income existing = serviceUtils.findIncomeByIdAndFarmId(id, tokenInfo.getFarmId());
         serviceUtils.checkOwnershipOrMaster(existing, tokenInfo.getUserId(), tokenInfo.getRole());
 
         builderUtils.updateIncomeFromRequest(existing, request);
         Income updated = incomeRepository.save(existing);
-        log.info("Income updated: {}", id);
+        log.info("Income updated: id={}", id);
 
-        Map<UUID, String> usernameMap = serviceUtils.getUsernameMapForFarm(authHeader, tokenInfo.getFarmId());
-
-        return serviceUtils.toResponseDTOWithFetch(updated, tokenInfo, usernameMap);
+        Map<UUID, String> usernameMap =
+                serviceUtils.getUsernameMapForFarm(authHeader, tokenInfo.getFarmId());
+        return serviceUtils.toResponseDTOWithFetch(authHeader, updated, tokenInfo, usernameMap);
     }
 
     @Override
     @Transactional
     public void delete(String authHeader, Long id) {
         TokenValidationResponse tokenInfo = serviceUtils.validateAndGetTokenInfo(authHeader);
-
         Income income = serviceUtils.findIncomeByIdAndFarmId(id, tokenInfo.getFarmId());
         serviceUtils.checkOwnershipOrMaster(income, tokenInfo.getUserId(), tokenInfo.getRole());
-
         incomeRepository.delete(income);
-        log.info("Income deleted: {}", id);
+        log.info("Income deleted: id={}", id);
     }
 
     @Override
     public Page<IncomeResponseDTO> findByFarmId(String authHeader, UUID farmId, Pageable pageable) {
         TokenValidationResponse tokenInfo = serviceUtils.validateAndGetTokenInfo(authHeader);
         serviceUtils.checkFarmAccess(farmId, tokenInfo.getFarmId(), tokenInfo.getRole());
-
         Page<Income> incomes = incomeRepository.findByFarmId(farmId, pageable);
         Map<UUID, String> usernameMap = serviceUtils.getUsernameMapForFarm(authHeader, farmId);
-
-        return serviceUtils.toResponseDTOPage(incomes, tokenInfo, usernameMap);
+        return serviceUtils.toResponseDTOPage(authHeader, incomes, tokenInfo, usernameMap);
     }
 
     @Override
-    public Page<IncomeResponseDTO> findByDateRange(String authHeader, LocalDate start, LocalDate end, Pageable pageable) {
+    public Page<IncomeResponseDTO> findByDateRange(String authHeader, LocalDate start,
+                                                   LocalDate end, Pageable pageable) {
         if (start == null || end == null) {
-            throw new BusinessException("Start date and end date are required parameters");
+            throw new BusinessException("Start date and end date are required");
         }
-
         if (start.isAfter(end)) {
             throw new BusinessException("Start date cannot be after end date");
         }
-
         TokenValidationResponse tokenInfo = serviceUtils.validateAndGetTokenInfo(authHeader);
-
-        Page<Income> incomes =
-                incomeRepository.findByFarmIdAndOccurredAtBetween(tokenInfo.getFarmId(), start, end, pageable);
-        Map<UUID, String> usernameMap = serviceUtils.getUsernameMapForFarm(authHeader, tokenInfo.getFarmId());
-
-        return serviceUtils.toResponseDTOPage(incomes, tokenInfo, usernameMap);
+        Page<Income> incomes = incomeRepository.findByFarmIdAndOccurredAtBetween(
+                tokenInfo.getFarmId(), start, end, pageable);
+        Map<UUID, String> usernameMap =
+                serviceUtils.getUsernameMapForFarm(authHeader, tokenInfo.getFarmId());
+        return serviceUtils.toResponseDTOPage(authHeader, incomes, tokenInfo, usernameMap);
     }
 }
