@@ -11,10 +11,14 @@ public final class InvestmentMapper {
 
     public static Investment toEntity(InvestmentRequestDTO request) {
         Investment entity = new Investment();
+        updateEntity(entity, request);
+        return entity;
+    }
+
+    public static void updateEntity(Investment entity, InvestmentRequestDTO request) {
         entity.setDescription(request.getDescription());
         entity.setAmount(request.getAmount());
         entity.setOccurredAt(request.getOccurredAt());
-        return entity;
     }
 
     public static InvestmentResponseDTO toResponse(Investment entity) {
@@ -23,6 +27,9 @@ public final class InvestmentMapper {
         response.setDescription(entity.getDescription());
         response.setAmount(entity.getAmount());
         response.setOccurredAt(entity.getOccurredAt());
+        response.setFarmId(entity.getFarmId());
+        response.setUserId(entity.getUserId());
+        response.setTransactionId(entity.getTransactionId());
         return response;
     }
 }
