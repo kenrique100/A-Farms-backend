@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -18,7 +17,7 @@ public class SecurityConfig {
 
     public static final String[] PUBLIC_ENDPOINTS = {
             "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs",
-            "/swagger-resources/**", "/webjars/**", "/actuator/health", "/actuator/info"
+            "/swagger-resources/**", "/webjars/**", "/actuator/health/**", "/actuator/info"
     };
 
     private final JwtAuthFilter jwtAuthFilter;
@@ -26,9 +25,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**", "/swagger-ui/**", "/v3/api-docs/**", "/actuator/**"))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -36,8 +34,7 @@ public class SecurityConfig {
                             response.setCharacterEncoding("UTF-8");
                             response.getWriter().write(String.format(
                                     "{\"timestamp\":\"%s\",\"status\":401,\"message\":\"Unauthorized: %s\"}",
-                                    java.time.LocalDateTime.now(), authException.getMessage()
-                            ));
+                                    java.time.LocalDateTime.now(), authException.getMessage()));
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -45,16 +42,12 @@ public class SecurityConfig {
                             response.setCharacterEncoding("UTF-8");
                             response.getWriter().write(String.format(
                                     "{\"timestamp\":\"%s\",\"status\":403,\"message\":\"Access denied: %s\"}",
-                                    java.time.LocalDateTime.now(), accessDeniedException.getMessage()
-                            ));
-                        })
-                )
+                                    java.time.LocalDateTime.now(), accessDeniedException.getMessage()));
+                        }))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 }

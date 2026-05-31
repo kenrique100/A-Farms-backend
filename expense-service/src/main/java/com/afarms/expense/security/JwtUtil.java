@@ -5,12 +5,11 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
 
 @Component
 @Slf4j
@@ -24,23 +23,17 @@ public class JwtUtil {
 
     public boolean validateToken(String token) {
         try {
-            extractAllClaims(token);
+            extractClaims(token);
             return true;
-        } catch (ExpiredJwtException e) {
-            log.warn("JWT token has expired: {}", e.getMessage());
-        } catch (JwtException e) {
-            log.warn("JWT token is invalid: {}", e.getMessage());
-        } catch (Exception e) {
-            log.error("Unexpected error validating JWT: {}", e.getMessage());
+        } catch (ExpiredJwtException ex) {
+            log.warn("JWT token has expired: {}", ex.getMessage());
+        } catch (JwtException ex) {
+            log.warn("JWT token is invalid: {}", ex.getMessage());
         }
         return false;
     }
 
     public Claims extractClaims(String token) {
-        return extractAllClaims(token);
-    }
-
-    private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()

@@ -34,6 +34,7 @@ public class SecurityConfig {
             "/webjars/**",
             // Actuator
             "/actuator/health",
+            "/actuator/health/**",
             "/actuator/info"
     };
 

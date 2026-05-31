@@ -4,6 +4,8 @@ import com.afarms.expense.model.dto.ExpenseRequestDTO;
 import com.afarms.expense.model.dto.ExpenseResponseDTO;
 import com.afarms.expense.service.ExpenseService;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,11 +14,16 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/expenses")
@@ -34,13 +41,12 @@ public class ExpenseController {
     @GetMapping
     public ResponseEntity<Page<ExpenseResponseDTO>> findAll(
             @RequestHeader("Authorization") String authHeader,
+            @RequestParam(required = false) UUID farmId,
+            @RequestParam(required = false) UUID userId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
             @PageableDefault(size = 20, sort = "occurredAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(expenseService.findAll(authHeader, pageable));
-    }
-
-    @GetMapping("/all")
-    public ResponseEntity<List<ExpenseResponseDTO>> findAllList(@RequestHeader("Authorization") String authHeader) {
-        return ResponseEntity.ok(expenseService.findAllList(authHeader));
+        return ResponseEntity.ok(expenseService.findAll(authHeader, farmId, userId, start, end, pageable));
     }
 
     @GetMapping("/{id}")
@@ -61,22 +67,5 @@ public class ExpenseController {
                                        @PathVariable Long id) {
         expenseService.delete(authHeader, id);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/farm/{farmId}")
-    public ResponseEntity<Page<ExpenseResponseDTO>> findByFarm(
-            @RequestHeader("Authorization") String authHeader,
-            @PathVariable UUID farmId,
-            @PageableDefault(size = 20, sort = "occurredAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(expenseService.findByFarmId(authHeader, farmId, pageable));
-    }
-
-    @GetMapping("/range")
-    public ResponseEntity<Page<ExpenseResponseDTO>> findByDateRange(
-            @RequestHeader("Authorization") String authHeader,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
-            @PageableDefault(size = 20, sort = "occurredAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(expenseService.findByDateRange(authHeader, start, end, pageable));
     }
 }

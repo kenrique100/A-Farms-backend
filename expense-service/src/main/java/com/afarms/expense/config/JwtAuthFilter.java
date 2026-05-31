@@ -6,6 +6,12 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,13 +20,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -35,25 +34,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
         String requestURI = request.getRequestURI();
-
         if (shouldSkipJwtValidation(requestURI)) {
             chain.doFilter(request, response);
             return;
         }
 
         String authHeader = request.getHeader("Authorization");
-
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.warn("Missing or invalid Authorization header for path: {}", requestURI);
             sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED,
                     "Missing or invalid Authorization header");
             return;
         }
 
         String token = authHeader.substring(7);
-
         if (!jwtUtil.validateToken(token)) {
-            log.warn("Invalid or expired JWT token for path: {}", requestURI);
             sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED,
                     "Invalid or expired token");
             return;
@@ -63,12 +57,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String email = claims.getSubject();
         String role = resolveRole(claims);
 
-        UsernamePasswordAuthenticationToken auth =
-                new UsernamePasswordAuthenticationToken(email, null,
-                        List.of(new SimpleGrantedAuthority("ROLE_" + role)));
-        SecurityContextHolder.getContext().setAuthentication(auth);
-        log.debug("Authenticated user: {} with role: {}", email, role);
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                email,
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_" + role)));
 
+        SecurityContextHolder.getContext().setAuthentication(auth);
         chain.doFilter(request, response);
     }
 
@@ -78,8 +72,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(String.format(
                 "{\"timestamp\":\"%s\",\"status\":%d,\"message\":\"%s\"}",
-                LocalDateTime.now(), status, message
-        ));
+                LocalDateTime.now(), status, message));
     }
 
     private boolean shouldSkipJwtValidation(String requestURI) {
@@ -94,23 +87,23 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private String resolveRole(Claims claims) {
         Object rolesClaim = claims.get("roles");
         if (rolesClaim instanceof Collection<?> collection) {
-            return collection.stream()
-                    .filter(Objects::nonNull)
+            return collection.stream().filter(Objects::nonNull)
                     .map(String::valueOf)
                     .findFirst()
                     .map(this::normalizeRole)
                     .orElse("USER");
         }
+
         String role = claims.get("role", String.class);
         if (role != null && !role.isBlank()) {
             return normalizeRole(role);
         }
+
         Object realmAccess = claims.get("realm_access");
-        if (realmAccess instanceof Map<?, ?> realmAccessMap) {
-            Object realmRoles = realmAccessMap.get("roles");
-            if (realmRoles instanceof Collection<?> collection) {
-                return collection.stream()
-                        .filter(Objects::nonNull)
+        if (realmAccess instanceof Map<?, ?> map) {
+            Object realmRoles = map.get("roles");
+            if (realmRoles instanceof Collection<?> c) {
+                return c.stream().filter(Objects::nonNull)
                         .map(String::valueOf)
                         .findFirst()
                         .map(this::normalizeRole)

@@ -6,13 +6,10 @@ import com.afarms.expense.exception.UnauthorizedException;
 import com.afarms.expense.model.dto.ExpenseRequestDTO;
 import com.afarms.expense.model.dto.TokenValidationResponse;
 import com.afarms.expense.model.enums.UserRole;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDate;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
-
 @Component
-@Slf4j
 public class ExpenseValidationUtils {
 
     public void validateAuthorizationHeader(String authHeader) {
